@@ -11,11 +11,12 @@ set(UTILS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/utils)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${UTILS_DIR})
 
 # this is the source files
-set(SOURCE_FILES src/library.cpp)
+set(SOURCE_FILES src/vector.cpp)
 
 # the library target
 add_library(STLcontainer STATIC ${SOURCE_FILES})
 
 # test the library in a local file
+# QUOTE THESE TWO LINES IF YOU'RE LINKING THIS LIBRARY TO YOUR PROJECT
 add_executable(test_library app/test_library.cpp)
 target_link_libraries(test_library STLcontainer)

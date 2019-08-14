@@ -1,6 +1,0 @@
-#ifndef STLCONTAINER_LIBRARY_H
-#define STLCONTAINER_LIBRARY_H
-
-void hello();
-
-#endif //STLCONTAINER_LIBRARY_H
