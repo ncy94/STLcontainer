@@ -2,6 +2,7 @@
 #define STLCONTAINER_VECTOR_HPP
 
 #include <cstddef>
+#include <memory>
 #include "iterator.hpp"
 
 namespace sc::regular{
@@ -37,7 +38,7 @@ namespace sc::regular{
         //default constructor
         vector()noexcept : start_(nullptr), finish_(nullptr), end_(nullptr) {};
 
-        vector(size_type size);
+        explicit vector(size_type size);
 
         //copy constructor/assignment
         vector(const vector&);
@@ -178,6 +179,78 @@ namespace sc::regular{
 
 
     };
+
+
+    // construct the container with given size
+    template <class T>
+    vector<T>::vector(size_type size) {
+        start_ = static_cast<pointer >(::operator new(size * sizeof(size_type)));
+        finish_ = start_;
+        end_ = start_ + size;
+
+    }
+
+    // copy constructor
+    template <class T>
+    vector<T>::vector(const vector& other) {
+        start_ = static_cast<pointer >(::operator new(other.max_size() * sizeof(size_type)));
+        end_ = start_ + other.max_size();
+        try {
+            finish_ = std::uninitialized_copy(other.start_, other.finish_, finish_);
+        }catch (...){
+            ::operator delete(start_);
+            throw;
+        }
+
+    }
+
+    // move constructor
+    template <class T>
+    vector<T>::vector(sc::regular::vector<T> && other) noexcept {
+        start_ = other.start_;
+        other.start_ = nullptr;
+        end_ = other.end_;
+        other.end_ = nullptr;
+        finish_ = other.finish_;
+        other.finish_ = nullptr;
+    }
+
+    // copy assignment
+    template <class T>
+    vector<T>& vector<T>::operator=(const vector<T> & other) {
+        start_ = static_cast<pointer>(::operator new(other.max_size() * sizeof(size_type)));
+        end_ = start_ + other.max_size();
+        try {
+            finish_ = std::uninitialized_copy(other.start_, other.finish_, finish_);
+        }catch (...){
+            ::operator delete(start_);
+            throw;
+        }
+
+    }
+
+    // move assignment
+    template <class T>
+    vector<T>& vector<T>::operator=(sc::regular::vector<T> &&other) noexcept {
+        start_ = other.start_;
+        other.start_ = nullptr;
+        end_ = other.end_;
+        other.end_ = nullptr;
+        finish_ = other.finish_;
+        other.finish_ = nullptr;
+    }
+
+    //destructor
+    template <class T>
+    vector<T>::~vector() {
+        clear();
+        ::operator delete(start_);
+    }
+
+    template <class T>
+    void vector<T>::clear() {
+
+    }
 
 }
 
