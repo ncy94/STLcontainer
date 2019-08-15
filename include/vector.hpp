@@ -63,53 +63,63 @@ namespace sc::regular{
          */
 
         //access the element at the pos location, returns its reference
-        reference at(size_type pos);
-        const_ref at(size_type pos) const;
+        reference at(size_type pos) {
+            return start_[pos];
+        }
+
+        const_ref at(size_type pos) const {
+            return start_[pos];
+        }
 
         //subscription operator
-        reference operator[](size_type pos);
-        const_ref operator[](size_type pos) const;
+        reference operator[](size_type pos) {
+            return start_[pos];
+        }
+
+        const_ref operator[](size_type pos) const{
+            return start_[pos];
+        }
 
         //access the front element, returns its reference
-        reference front();
-        const_ref front() const;
+        reference front() { return *start_; }
+        const_ref front() const {return *start_;} // cannot return front() here, infinite invoation
 
         //access the back element, returns its reference
-        reference back();
-        const_ref back() const;
+        reference back() {return finish_[-1];}
+        const_ref back() const {return finish_[-1];}
 
         /*
          * Iterators
          */
 
         //returns an iterator to the begin of the elements
-        iterator being();
-        const_iterator begin() const;
+        iterator being() {return iterator(front());}
+        const_iterator begin() const {return const_iterator(front());}
 
         //returns an iterator to the end of the elements
-        iterator end();
-        const_iterator end() const;
+        iterator end() {return iterator(end());}
+        const_iterator end() const { return const_iterator(end());}
 
         /*
          * Capacity
          */
 
         // checks whether this function is empty
-        bool empty() const;
+        bool empty() const { return size() == 0;}
 
         // returns the number of elements
-        size_type size() const;
+        size_type size() const {return finish_ - start_; }
 
         // returns the maximum number of elements that can be held
-        size_type max_size() const;
+        size_type max_size() const {return end_ - start_;}
 
         // reserve this container to the specified size.
         // if the size parameter doesn't exceed the current
-        // max size, this function has no efffect
-        void reserve(size_type size);
+        // max size, this function has no effect
+        void reserve(size_type n);
 
         // returns the number of elements that can be held
-        size_type capacity() const;
+        size_type capacity() const {return end_ - start_;}
 
         // reduces memory usage by freeing unused memory
         void shrink_to_fit();
@@ -156,6 +166,7 @@ namespace sc::regular{
          * Non-member functions
          */
 
+        //all the relations can be derived by operator<
         friend bool operator==(const vector&, const vector&);
 
         friend bool operator!=(const vector&, const vector&);
@@ -172,11 +183,10 @@ namespace sc::regular{
 
 
     private:
+        void changeCapacity(size_type n); //change the memory allocation for the container
         pointer start_; // points to the start of container
         pointer finish_; // points to one-past-the-last element
         pointer end_; // points to the end of container
-
-
 
     };
 
@@ -193,10 +203,14 @@ namespace sc::regular{
     // copy constructor
     template <class T>
     vector<T>::vector(const vector& other) {
-        start_ = static_cast<pointer >(::operator new(other.max_size() * sizeof(size_type)));
-        end_ = start_ + other.max_size();
+        // only the memory that stores elements need to be copied, the allocated memory
+        // of two vectors doesn't need to be the same
+        start_ = static_cast<pointer >(::operator new(other.size() * sizeof(size_type)));
+        end_ = start_ + other.size();
         try {
             finish_ = std::uninitialized_copy(other.start_, other.finish_, finish_);
+            // finish and end must points to the same memory in this context.
+            assert(finish_ == end_);
         }catch (...){
             ::operator delete(start_);
             throw;
@@ -218,8 +232,8 @@ namespace sc::regular{
     // copy assignment
     template <class T>
     vector<T>& vector<T>::operator=(const vector<T> & other) {
-        start_ = static_cast<pointer>(::operator new(other.max_size() * sizeof(size_type)));
-        end_ = start_ + other.max_size();
+        start_ = static_cast<pointer>(::operator new(other.size() * sizeof(size_type)));
+        end_ = start_ + other.size();
         try {
             finish_ = std::uninitialized_copy(other.start_, other.finish_, finish_);
         }catch (...){
@@ -249,8 +263,213 @@ namespace sc::regular{
 
     template <class T>
     void vector<T>::clear() {
+        // if the container is not empty, destroy the elements
+        if(size())
+            std::destroy(start_, finish_);
+    }
+
+    template<class T>
+    void vector<T>::changeCapacity(vector::size_type n) {
+        // allocates a new chunk of memory of this size
+        auto new_start = static_cast<pointer >(::operator new(n * sizeof(value_type)));
+        size_type old_size = size();
+        try {
+            // if size is smaller than old size, the extra part will be trimmed
+            std::uninitialized_move(start_, start_+n, new_start);
+        }catch (...){
+            ::operator delete(new_start);
+            throw;
+        }
+
+        //deallocate the chunk of memory of the old vector
+        ::operator delete(start_);
+        start_ = new_start;
+        finish_ = new_start + old_size;
+
+        // if the new size is smaller, trim the extra part
+        if(old_size > n)
+            end_ = finish_;
+        else
+            end_ = new_start + n;
 
     }
+
+    template<class T>
+    void vector<T>::reserve(vector::size_type n) {
+        // if size doesn't exceed current size, this
+        // function has no effect
+        if(n <= size())
+            return;
+
+        changeCapacity(n);
+
+    }
+
+    template<class T>
+    void vector<T>::shrink_to_fit() {
+        // if current size doesn't exceed capacity, function has no effect
+        if(capacity() == size())
+            return;
+        changeCapacity(size());
+
+    }
+
+    template<class T>
+    typename vector<T>::iterator vector<T>::insert(vector::iterator iter, const value_type &value) {
+        //record the relative position of iter, because changeCapacity invalidates iterator
+        difference_type offset = iter - begin();
+
+        //if it's at max capacity, double the size
+        if(capacity() == size())
+            changeCapacity(2 * capacity());
+
+        //insert the element in place
+
+        std::uninitialized_copy(start_ + offset, finish_, start_ + offset + 1);
+        start_[offset] = value;
+        return vector::iterator(start_+offset);
+
+    }
+
+    template<class T>
+    typename vector<T>::const_iterator vector<T>::insert(vector::const_iterator citer, const value_type &value){
+        //record the relative position of iter, because changeCapacity invalidates iterator
+        difference_type offset = citer - begin();
+
+        //if it's at max capacity, double the size
+        if(capacity() == size())
+            changeCapacity(2 * capacity());
+
+        //insert the element in place
+
+        std::uninitialized_copy(start_+offset, finish_, start_+offset+1);
+        start_[offset] = value;
+        return const_iter(start_+offset);
+    }
+
+    template<class T>
+    typename vector<T>::iterator vector<T>::erase(vector::iterator iter) {
+        // record the offset, because const_iterator-pointed element cannot be modified
+        difference_type offset = iter - begin();
+
+        // copy the elements in place
+        std::uninitialized_copy(start_+offset+1, finish_, start_+offset);
+
+        //destroy the last element
+        std::destroy_at(finish_);
+
+        //decrement the finish pointer
+        --finish_;
+
+        return start_ + offset;
+    }
+
+    template<class T>
+    void vector<T>::push_back(const value_type &value) {
+        if(capacity() == size())
+            //double the capacity to achieve asymptotic logarithmic time complexity
+            changeCapacity(2 * capacity());
+
+        *finish_ = value;
+        ++finish_;
+
+    }
+
+    template<class T>
+    void vector<T>::push_back(value_type &&value) {
+        if(capacity() == size())
+            //double the capacity to achieve asymptotic logarithmic time complexity
+            changeCapacity(2 * capacity());
+
+        *finish_ = std::move(value);
+        ++finish_;
+    }
+
+    template<class T>
+    void vector<T>::pop_back() {
+        assert(size() != 0);
+        //destruct the element at finish-1
+        std::destroy_at(finish_--);
+
+    }
+
+    template<class T>
+    void vector<T>::resize(vector::size_type size) {
+        changeCapacity(size);
+
+    }
+
+    template<class T>
+    void vector<T>::resize(vector::size_type size, const value_type &value) {
+        changeCapacity(size);
+
+        //if changeCapacity is the result of expansion, fill the empty spaces
+        if(capacity() > this->size()){
+            std::uninitialized_fill_n(finish_, end_-1 ,value);
+        }
+
+    }
+
+    template<class T>
+    void vector<T>::swap(vector &other) {
+        // this swap only swap pointers
+        // however, this function invalidates iterators and references
+        std::swap(start_, other.start_);
+        std::swap(end_, other.end_);
+        std::swap(finish_, other.finish_);
+
+    }
+
+    template <class T>
+    bool operator==(const vector<T> &v1, const vector<T> &v2) {
+        if(v1.size == v2.size()){
+            for(auto iter1= v1.begin(), iter2= v2.begin(); v1!=v1.end(); ++v1, ++v2){
+                if(*iter1 != *iter2)
+                    break;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    template <class T>
+    bool operator!=(const vector<T> &v1, const vector<T> &v2) {
+        return !(v1 == v2);
+    }
+
+    template <class T>
+    bool operator>(const vector<T> &v1, const vector<T> &v2) {
+        // lexically compare the elements if the size is equal
+        if(v1.size() == v2.size()){
+            for(auto iter1= v1.begin(), iter2= v2.begin(); v1!=v1.end(); ++v1, ++v2){
+                // if the current element is the same
+                if(*iter1 == *iter2)
+                    continue;
+
+                return (*iter1 > *iter2);
+            }
+
+        }
+
+        return (v1.size() > v2.size());
+    }
+
+    template <class T>
+    bool operator<(const vector<T> &v1, const vector<T> &v2) {
+        return v2 > v1;
+    }
+
+    template <class T>
+    bool operator>=(const vector<T> &v1, const vector<T> &v2) {
+        return !(v2 > v1);
+    }
+
+    template <class T>
+    bool operator<=(const vector<T> &v1, const vector<T> &v2) {
+        return !(v1 > v2);
+    }
+
 
 }
 
