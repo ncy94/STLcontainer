@@ -35,15 +35,17 @@ namespace sc::regular{
 
         //declare member functions
         //default constructor
-        vector();
+        vector()noexcept : start_(nullptr), finish_(nullptr), end_(nullptr) {};
+
+        vector(size_type size);
 
         //copy constructor/assignment
         vector(const vector&);
         vector& operator=(const vector&);
 
         //move constructor/assignment
-        vector(vector&&);
-        vector operator=(vector&&);
+        vector(vector&&) noexcept ;
+        vector& operator=(vector&&) noexcept ;
 
         //destructor
         ~vector();
@@ -170,7 +172,7 @@ namespace sc::regular{
 
     private:
         pointer start_; // points to the start of container
-        pointer finish_; // points to the last element
+        pointer finish_; // points to one-past-the-last element
         pointer end_; // points to the end of container
 
 
