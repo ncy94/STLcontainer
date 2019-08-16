@@ -21,3 +21,6 @@ target_include_directories(container_library PUBLIC {CMAKE_CURRENT_SOURCE_DIR}/i
 
 add_executable(test_vector app/test_vector.cpp)
 target_link_libraries(test_vector PUBLIC container_library)
+
+add_executable(test_list app/test_list.cpp)
+target_link_libraries(test_list PUBLIC container_library)
