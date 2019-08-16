@@ -11,12 +11,13 @@ namespace sc::utils{
 
     //array iterator is implicity random access
     template <class T>
-    class array_iterator : public iterator_base<T> {
+    class array_iterator : public iterator_base<T, array_iterator<T>> {
 
-        using iterator_base<T>::ptr_;
-        using typename iterator_base<T>::difference_type ;
-        using typename iterator_base<T>::pointer;
-        using typename iterator_base<T>::reference;
+        // C++ doesn’t consider superclass templates for name resolution
+        using iterator_base<T, array_iterator<T>>::ptr_;
+        using typename iterator_base<T, array_iterator<T>>::difference_type ;
+        using typename iterator_base<T, array_iterator<T>>::pointer;
+        using typename iterator_base<T, array_iterator<T>>::reference;
 
         //forward
         array_iterator&operator++() {
