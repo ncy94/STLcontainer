@@ -23,6 +23,7 @@ make
 ## container lists
 - vector
 - list
+- deque
 - set
 - map
 - unordered_set
