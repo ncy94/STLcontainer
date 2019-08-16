@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <memory>
 #include <cassert>
-#include "iterator.hpp"
+#include "array_iterator.hpp"
 
 namespace sc::regular{
 
@@ -27,9 +27,9 @@ namespace sc::regular{
 
         using const_ptr = const T*;
 
-        using iterator = sc::utils::iterator<T>;
+        using iterator = sc::utils::array_iterator<T>;
 
-        using const_iterator = sc::utils::iterator<T const>;
+        using const_iterator = sc::utils::array_iterator<T const>;
 
         /*
          * consturctors
