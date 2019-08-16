@@ -15,13 +15,12 @@ namespace sc::utils{
 
         node_base(T val): val_(val), next_(nullptr){}
 
-        T value() const {return val_;}
-
-        Node* next() const { return next_;}
-
-    protected:
+    private:
+        template <class> friend class list;
         T val_;
+
         Node* next_;
+
     };
 
 

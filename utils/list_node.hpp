@@ -16,9 +16,9 @@ namespace sc::utils{
 
          list_node(): node_base<T,list_node<T>>(), prev_(nullptr){}
 
-         list_node* prev() const{ return prev_;}
+     private:
+         template <class> friend class list;
 
-     protected:
          list_node* prev_;
 
      };

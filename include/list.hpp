@@ -37,7 +37,10 @@ namespace sc::utils{
          */
 
         //default constructor
-        list(): node_(), size_(0) {}
+        list(): node_(), size_(0) {
+            node_.next_ = &node_;
+            node_.prev_ = &node_;
+        }
 
         //construct list of length count, default value if not specified
         explicit list(size_type count, const value_type& value = value_type());
@@ -46,9 +49,9 @@ namespace sc::utils{
                 list(InputIterator first, InputIterator last);
 
         list(const list& other);
-        list(list&& other);
+        list(list&& other) noexcept ;
         list&operator=(const list& other);
-        list&operator=(list&& other);
+        list&operator=(list&& other) noexcept ;
 
         ~list(){
             clear();
@@ -207,6 +210,114 @@ namespace sc::utils{
         list_node<T> node_; // sentinel node
         size_type size_;
     };
+
+    template <class T>
+    list<T>::list(list::size_type count, const value_type &value):node_(), size_(0) {
+        list_node<T>* tmp = node_;
+        while(size_ < count){
+            tmp->next_ = new list_node(value);
+            tmp->next->prev_ = tmp;
+            tmp = tmp->next_;
+            size_ += 1;
+        }
+        tmp->next_ = &node_;
+
+    }
+
+    template<class T>
+    template<class InputIterator>
+    list<T>::list(InputIterator first, InputIterator last): node_(), size_(0) {
+        list_node<T>* tmp = node_;
+        for(auto iter = first; iter != last; ++iter){
+            tmp->next_ = new list_node(iter->val_);
+            tmp->next_->prev_ = tmp;
+            tmp = tmp->next_;
+            size_ += 1;
+        }
+        tmp->next_ = &node_;
+
+    }
+
+    template<class T>
+    list<T>::list(const list &other): node_(), size_(0) {
+        list_node<T>* des = node_;
+        list_node<T>* src = other.node_;
+        while(size_ < other.size()){
+            des->next_ = new list_node(src->val_);
+            des->next_->prev_ = des;
+
+            //proceed both nodes
+            des = des->next_;
+            src = src->next_;
+            size_ += 1;
+        }
+        des->next_ = &node_;
+        // src should points to the sentinel node at this time
+        assert(src->next_ == other.end());
+    }
+
+    template<class T>
+    list<T>::list(list &&other) noexcept {
+        node_ = std::move(other.node_);
+        other.node_ = nullptr;
+        size_ = other.size();
+    }
+
+    template<class T>
+    list<T> &list<T>::operator=(const list &other) {
+        clear();
+        list_node<T>* des = node_;
+        list_node<T>* src = other.node_;
+        while(size_ < other.size()){
+            des->next_ = new list_node(src->val_);
+            des->next_->prev_ = des;
+
+            //proceed both nodes
+            des = des->next_;
+            src = src->next_;
+            size_ += 1;
+        }
+        des->next_ = &node_;
+        // src should points to the sentinel node at this time
+        assert(src->next_ == other.end());
+    }
+
+    template<class T>
+    list<T> &list<T>::operator=(list &&other) noexcept {
+        clear();
+        node_ = std::move(other.node_);
+        other.node_ = nullptr;
+        size_ = other.size();
+    }
+
+    template<class T>
+    template<class InputIterator>
+    void list<T>::assign(InputIterator first, InputIterator last) {
+        clear();
+        list_node<T>* tmp = node_;
+        for(auto iter = first; iter != last; ++iter){
+            tmp->next_ = new list_node(iter->val_);
+            tmp->next_->prev_ = tmp;
+            tmp = tmp->next_;
+            size_ += 1;
+        }
+        tmp->next_ = &node_;
+
+    }
+
+    template<class T>
+    void list<T>::assign(list::size_type count, const T &value) {
+        clear();
+        list_node<T>* tmp = node_;
+        for(int i=0; i<count; ++i){
+            tmp->next_ = new list_node(value);
+            tmp->next_->prev_ = tmp;
+            tmp = tmp->next_;
+        }
+
+        tmp->next_ = &node_;
+
+    }
 
 }
 
