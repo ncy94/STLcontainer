@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <cassert>
 #include "iterator.hpp"
 
 namespace sc::regular{
@@ -469,6 +470,29 @@ namespace sc::regular{
     bool operator<=(const vector<T> &v1, const vector<T> &v2) {
         return !(v1 > v2);
     }
+
+    template<class T>
+    void vector<T>::assign(vector::size_type count, const value_type &value) {
+        clear();
+        if(count > capacity()){
+            changeCapacity(count);
+        }
+        std::uninitialized_fill_n(start_, count, value);
+
+    }
+
+    template<class T>
+    template<class InputIterator>
+    void vector<T>::assign(InputIterator first, InputIterator last) {
+        clear();
+        size_type new_size = last - first;
+        if(new_size > capacity()){
+            changeCapacity(new_size);
+        }
+        std::uninitialized_copy(first, last, start_);
+
+    }
+
 
 
 }
