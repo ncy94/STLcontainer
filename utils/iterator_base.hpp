@@ -5,6 +5,8 @@
 #ifndef STLCONTAINER_ITERATOR_BASE_HPP
 #define STLCONTAINER_ITERATOR_BASE_HPP
 
+#include <type_traits>
+
 namespace sc::utils{
 
     // use CRTP idiom to prevent post-increment returns abstract class

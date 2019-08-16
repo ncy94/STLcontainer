@@ -11,14 +11,17 @@ namespace sc::utils{
 
     // bidirectional list node
     template <class T>
-     class list_node: public node_base<T, list_node>{
+     class list_node: public node_base<T, list_node<T>>{
      public:
+
+         list_node(): node_base<T,list_node<T>>(), prev_(nullptr){}
+
          list_node* prev() const{ return prev_;}
 
-    protected:
+     protected:
          list_node* prev_;
 
-    };
+     };
 }
 
 #endif //STLCONTAINER_LIST_NODE_HPP

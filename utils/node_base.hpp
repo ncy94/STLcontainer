@@ -7,9 +7,12 @@
 
 namespace sc::utils{
 
+    // single direction node base
     template <class T, class Node>
     class node_base{
     public:
+        node_base(): val_(0), next_(nullptr){}
+
         node_base(T val): val_(val), next_(nullptr){}
 
         T value() const {return val_;}
