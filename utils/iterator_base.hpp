@@ -47,12 +47,13 @@ namespace sc::utils{
         }
 
 
-
-    private:
+    protected:
         template <class>friend class iterator_base;
         pointer ptr_;
 
     };
+
+
 }
 
 #endif //STLCONTAINER_ITERATOR_BASE_HPP
