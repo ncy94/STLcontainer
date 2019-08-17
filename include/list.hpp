@@ -8,6 +8,7 @@
 #include "list_node.hpp"
 #include "list_iterator.hpp"
 #include <functional>
+#include <cassert>
 
 namespace sc::utils{
 
@@ -213,7 +214,7 @@ namespace sc::utils{
 
     template <class T>
     list<T>::list(list::size_type count, const value_type &value):node_(), size_(0) {
-        list_node<T>* tmp = node_;
+        list_node<T>* tmp = &node_;
         while(size_ < count){
             tmp->next_ = new list_node(value);
             tmp->next->prev_ = tmp;
@@ -227,7 +228,7 @@ namespace sc::utils{
     template<class T>
     template<class InputIterator>
     list<T>::list(InputIterator first, InputIterator last): node_(), size_(0) {
-        list_node<T>* tmp = node_;
+        list_node<T>* tmp = &node_;
         for(auto iter = first; iter != last; ++iter){
             tmp->next_ = new list_node(iter->val_);
             tmp->next_->prev_ = tmp;
@@ -240,8 +241,8 @@ namespace sc::utils{
 
     template<class T>
     list<T>::list(const list &other): node_(), size_(0) {
-        list_node<T>* des = node_;
-        list_node<T>* src = other.node_;
+        list_node<T>* des = &node_;
+        list_node<T>* src = &(other.node_);
         while(size_ < other.size()){
             des->next_ = new list_node(src->val_);
             des->next_->prev_ = des;
@@ -261,13 +262,14 @@ namespace sc::utils{
         node_ = std::move(other.node_);
         other.node_ = nullptr;
         size_ = other.size();
+        other.size_ = 0;
     }
 
     template<class T>
     list<T> &list<T>::operator=(const list &other) {
         clear();
-        list_node<T>* des = node_;
-        list_node<T>* src = other.node_;
+        list_node<T>* des = &node_;
+        list_node<T>* src = &(other.node_);
         while(size_ < other.size()){
             des->next_ = new list_node(src->val_);
             des->next_->prev_ = des;
@@ -288,13 +290,14 @@ namespace sc::utils{
         node_ = std::move(other.node_);
         other.node_ = nullptr;
         size_ = other.size();
+        other.size_ = 0;
     }
 
     template<class T>
     template<class InputIterator>
     void list<T>::assign(InputIterator first, InputIterator last) {
         clear();
-        list_node<T>* tmp = node_;
+        list_node<T>* tmp = &node_;
         for(auto iter = first; iter != last; ++iter){
             tmp->next_ = new list_node(iter->val_);
             tmp->next_->prev_ = tmp;
@@ -308,14 +311,118 @@ namespace sc::utils{
     template<class T>
     void list<T>::assign(list::size_type count, const T &value) {
         clear();
-        list_node<T>* tmp = node_;
+        list_node<T>* tmp = &node_;
         for(int i=0; i<count; ++i){
             tmp->next_ = new list_node(value);
             tmp->next_->prev_ = tmp;
             tmp = tmp->next_;
+            size_ += 1;
         }
 
         tmp->next_ = &node_;
+
+    }
+
+    template<class T>
+    void list<T>::clear() {
+        // how to declare a pointer?
+        // delete from tail to head
+        list_node<T>* tmp = node_.prev_;
+        while(size_ > 0){
+            tmp = tmp->prev_;
+            delete(tmp->next_);
+            --size_;
+        }
+
+        assert(size_ == 0 && node_.prev_==node_.next_);
+
+    }
+
+    template<class T>
+    typename list<T>::iterator list<T>::insert(list::const_iterator pos, const T &value) {
+        list_node<T>* current = &(*pos); // the node to be inserted before
+        list_node<T>* prev = current->prev_; // the proceeding node of new node
+
+        //insert a new node after prev
+        prev->next_ = new list_node(value);
+        prev->next_->prev_ = prev;
+
+        //connect new node with current
+        current->prev_ = prev->next_;
+        prev->next_ = current;
+
+        ++size_;
+
+        return iterator(prev->next_);
+    }
+
+    template<class T>
+    typename list<T>::iterator list<T>::insert(list::const_iterator pos, T &&value) {
+        list_node<T>* current = &(*pos); // the node to be inserted before
+        list_node<T>* prev = current->prev_; // the proceeding node of new node
+
+        //insert a new node after prev
+        current->prev_->next_ = new list_node(std::move(value));
+        prev->next_->prev_ = prev;
+
+        //connect new node with current
+        current->prev_ = prev->next_;
+        prev->next_ = current;
+
+        ++size_;
+
+        return iterator(prev->next_);
+    }
+
+    template<class T>
+    typename list<T>::iterator list<T>::insert(list::const_iterator pos, list::size_type count, const T &value) {
+        list_node<T>* current = &(*pos); // the node to be inserted before
+        list_node<T>* prev = current->prev_; // the node used for iteration
+        list_node<T>* res = current->prev_; // the prev of the node to be returned
+
+        // insert i nodes after prev
+        for(int i=0; i<count; ++i){
+            prev->next_ = new list_node(value);
+            prev->next_->prev_ = prev;
+
+            //proceed to the next node
+            prev = prev->next_;
+            ++size_;
+        }
+
+        prev->next_ = current;
+        current->prev_ = prev;
+
+        //return the first inserted element
+        return iterator(res->next_);
+    }
+
+    template<class T>
+    template<class InputIt>
+    typename list<T>::iterator list<T>::insert(list::const_iterator pos, InputIt first, InputIt last) {
+        list_node<T>* current = &(*pos);
+        list_node<T>* prev = current->prev_;
+        list_node<T>* res = current->prev_;
+
+        for(auto iter = first; iter != last; ++iter){
+            prev->next_ = new list_node((*iter).val_);
+            prev->next_->prev_ = prev;
+
+            //proceed to the next node
+            prev = prev->next_;
+            ++size_;
+        }
+
+        prev->next_ = current;
+        current->prev_ = prev;
+
+        //return the first inserted element
+        return iterator(res->next_);
+
+    }
+
+    template<class T>
+    typename list<T>::iterator list<T>::erase(list::const_iterator pos) {
 
     }
 
