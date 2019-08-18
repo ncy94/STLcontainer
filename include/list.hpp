@@ -423,7 +423,211 @@ namespace sc::utils{
 
     template<class T>
     typename list<T>::iterator list<T>::erase(list::const_iterator pos) {
+        // the node before pos
+        // if pos is at the beginning, proc points to sentinel header node
+        // if pos is at the end, deleting will return iterator to end()
+        list_node<T>* proc = &(*(--pos));
 
+        proc->next_ = proc->next_->next_;
+        proc->next_->prev_ = proc;
+
+        // delete the node at pos
+        delete pos;
+
+        return iterator(proc->next_);
+
+
+    }
+
+    template<class T>
+    typename list<T>::iterator list<T>::erase(list::const_iterator first, list::const_iterator last) {
+        // the node before first
+        list_node<T>* proc = &(*(--first));
+
+        for(auto iter=first; iter!=last; ++iter){
+            //delete the node at iter
+            delete iter;
+        }
+
+        proc->next_ = &(*last);
+        last->prev_ = proc;
+
+        return iterator(last);
+    }
+
+    template<class T>
+    void list<T>::push_back(const T &value) {
+
+        list_node<T>* old_last = node_.prev_;
+
+        old_last->next_ = new list_node(value);
+        old_last->next_->prev_ = old_last;
+
+        old_last->next_->next_ = node_;
+        node_.prev_ = old_last->next_;
+
+        ++size_;
+
+    }
+
+    template<class T>
+    void list<T>::push_back(T &&value) {
+
+        list_node<T>* old_last = node_.prev_;
+
+        old_last->next_ = new list_node(std::move(value));
+        old_last->next_->prev_ = old_last;
+
+        old_last->next_->next_ = &node_;
+        node_.prev_ = old_last->next_;
+
+    }
+
+    template<class T>
+    void list<T>::pop_back() {
+        // if empty list, this function has no effect
+        if(size_ == 0)
+            return;
+
+        list_node<T>* old_last = node_.prev_;
+        old_last->prev_->next_ = &node_;
+        node_.prev_ = old_last->prev_;
+
+        delete old_last;
+        --size_;
+    }
+
+    template<class T>
+    void list<T>::push_front(const T &value) {
+        list_node<T>* old_front = node_.next_;
+
+        node_.next_ = new list_node(value);
+        node_.next_->prev_ = &node_;
+
+        node_.next_->next_ = old_front;
+        old_front->prev_ = &node_;
+
+        ++size_;
+
+    }
+
+    template<class T>
+    void list<T>::push_front(T &&value) {
+        list_node<T>* old_front = node_.next_;
+
+        node_.next_ = new list_node(std::move(value));
+        node_.next_->prev_ = &node_;
+
+        node_.next_->next_ = old_front;
+        old_front->prev_ = &node_;
+
+        ++size_;
+
+    }
+
+    template<class T>
+    void list<T>::resize(list::size_type count) {
+        if(count == 0){
+            clear();
+            return;
+        }
+
+        if(size_ == count)
+            return;
+
+        if(size_ < count){
+            while(size_ < count)
+                push_back(0);
+
+        } else{
+            // find the new last element in the short path
+            list_node<T>* current = node_.next_;
+            if(size_ - count > count){
+                for(int i=0; i<count; ++i){
+                    current = current->next_;
+                }
+            } else{
+                // should go one more step here
+                current = current->prev_;
+                for(int i=0; i<size_-count; ++i){
+                    current = current->prev_;
+                }
+            }
+
+            // record the new last node
+            list_node<T>* new_last = current->prev_;
+
+            // delete the trimmed nodes
+            while(size_ > count){
+                current = current->next_;
+                delete current->prev_;
+                --size_;
+            }
+            // current should be at the sentinel header node
+            assert(current == &node_ && size_ == count);
+
+            // should adjust the header node only after deletion is done
+            node_.prev_ = new_last;
+            new_last->next_ = &node_;
+        }
+
+    }
+
+    template<class T>
+    void list<T>::resize(list::size_type count, const value_type &value) {
+        if(count == 0){
+            clear();
+            return;
+        }
+
+        if(size_ == count)
+            return;
+
+        if(size_ < count){
+            while(size_ < count)
+                push_back(value);
+
+        } else{
+            // find the new last element in the short path
+            list_node<T>* current = node_.next_;
+            if(size_ - count > count){
+                for(int i=0; i<count; ++i){
+                    current = current->next_;
+                }
+            } else{
+                // should go one more step here
+                current = current->prev_;
+                for(int i=0; i<size_-count; ++i){
+                    current = current->prev_;
+                }
+            }
+
+            // record the new last node
+            list_node<T>* new_last = current->prev_;
+
+            // delete the trimmed nodes
+            while(size_ > count){
+                current = current->next_;
+                delete current->prev_;
+                --size_;
+            }
+            // current should be at the sentinel header node
+            assert(current == &node_ && size_ == count);
+
+            // should adjust the header node only after deletion is done
+            node_.prev_ = new_last;
+            new_last->next_ = &node_;
+        }
+
+    }
+
+    template<class T>
+    void list<T>::swap(list &other) {
+        auto tmp = std::move(node_);
+        node_ = std::move(other.node_);
+        other.node_ = tmp;
+
+        std::swap(size_, other.size_);
     }
 
 }
