@@ -805,11 +805,45 @@ namespace sc::regular{
 
     template<class T>
     typename list<T>::size_type list<T>::remove(const T &value) {
+        size_type old_size = size_;
+
+        for(auto iter=begin(); iter!= end(); ++iter){
+            if(iter->val_ == value){
+                //remove the element at iter
+                iter->prev_->nexrt_ = iter->next_;
+                iter->next_->prev_ = iter->prev_;
+                --size_;
+
+                delete &(*iter);
+            }
+        }
+
+        return size_-old_size;
 
     }
 
     template<class T>
     void list<T>::reverse() {
+        for(auto iter= begin(); iter!= end(); ++iter){
+            // record the next node;
+            list_node<T>* next = iter->next_;
+
+            // reverse the pointers between iter and iter's next
+            iter->next_->prev_ = &(*iter);
+            iter->prev_->next_ = iter->next;
+
+            iter = next;
+        }
+
+        // the new tail's next is node_
+        node_.next_->next_ = &(*node_);
+        // the new head's prev is node_
+        node_.prev_->prev_ = &(*node_);
+
+        // exchange head and tail node
+        list_node<T>* head = node_.next_;
+        node_.next_ = node_.prev_;
+        node_.prev_ = head;
 
     }
 
