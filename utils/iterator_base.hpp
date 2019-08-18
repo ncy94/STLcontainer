@@ -52,6 +52,8 @@ namespace sc::utils{
 
 
     protected:
+        template <class> friend class list_iterator;
+        template <class> friend class array_iterator;
         template <class>friend class iterator_base;
         pointer ptr_;
 

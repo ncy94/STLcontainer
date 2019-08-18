@@ -9,8 +9,38 @@
 
 namespace sc::utils{
 
+    // list iterator is implicitly bi-directional
     template <class T>
     class list_iterator : public iterator_base<T, list_iterator<T>>{
+    public:
+
+        // C++ doesn’t consider superclass templates for name resolution
+        using iterator_base<T, list_iterator<T>>::ptr_;
+        using typename iterator_base<T, list_iterator<T>>::difference_type ;
+        using typename iterator_base<T, list_iterator<T>>::pointer;
+        using typename iterator_base<T, list_iterator<T>>::reference;
+
+        list_iterator& operator++(){
+            ptr_ = ptr_->next_;
+            return *this;
+        }
+
+        list_iterator operator++(int){
+            list_iterator old(*this);
+            ptr_ = ptr_->next_;
+            return old;
+        }
+
+        list_iterator&operator--(){
+            ptr_ = ptr_->prev_;
+            return *this;
+        }
+
+        list_iterator operator--(int){
+            list_iterator old(*this);
+            ptr_ = ptr_->prev_;
+            return old;
+        }
 
     };
 }
