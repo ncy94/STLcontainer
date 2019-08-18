@@ -16,12 +16,7 @@ namespace sc::utils{
         node_base(): val_(0), next_(nullptr){}
 
         node_base(const node_base& other): val_(other.val_), next_(other.next_) {}
-        node_base(node_base&& other): val_(std::move(other.val_)), next_(std::move(other.next_)){
-            val_ = other.val_;
-            other.val_ = 0;
-            next_ = other.next_;
-            other.next_ = nullptr;
-        }
+        node_base(node_base&& other): val_(std::move(other.val_)), next_(std::move(other.next_)){ }
 
         node_base&operator=(const node_base& other){
             val_ = other.val_;

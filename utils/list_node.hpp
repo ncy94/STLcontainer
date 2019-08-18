@@ -15,6 +15,23 @@ namespace sc::utils{
      public:
 
          list_node(): node_base<T,list_node<T>>(), prev_(nullptr){}
+         list_node(const list_node& other): node_base<T,list_node<T>>(other), prev_(other.prev_) {}
+         list_node(list_node&& other) noexcept : node_base<T,list_node<T>>(std::move(other)), prev_(std::move(other.prev_)) {}
+
+         list_node&operator=(const list_node& other) {
+             node_base<T,list_node<T>>::operator=(other);
+             prev_ = other.prev_;
+
+             return *this;
+         }
+
+         list_node&operator=(list_node&& other) noexcept {
+             node_base<T,list_node<T>>::operator=(std::move(other));
+             prev_ = other.prev_;
+             other.prev_ = nullptr;
+             return *this;
+         }
+
 
      private:
          template <class> friend class list;
