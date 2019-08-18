@@ -34,7 +34,7 @@ namespace sc::utils{
 
 
      private:
-         template <class> friend class list;
+         template <class> friend class sc::regular::list;
 
          list_node* prev_;
 

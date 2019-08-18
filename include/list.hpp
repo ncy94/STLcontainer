@@ -10,7 +10,9 @@
 #include <functional>
 #include <cassert>
 
-namespace sc::utils{
+namespace sc::regular{
+
+    using namespace sc::utils;
 
     //doubly-linked list with sentinel node
     template <class T>
@@ -32,6 +34,7 @@ namespace sc::utils{
         using iterator = sc::utils::list_iterator<T>;
 
         using const_iterator = sc::utils::list_iterator<T const>;
+
 
         /*
          * constructors, assignments, destructor

@@ -4,7 +4,7 @@
 
 #include "list.hpp"
 
-using namespace sc::utils;
+using namespace sc::regular;
 
 template <class T>
 void do_test(){
