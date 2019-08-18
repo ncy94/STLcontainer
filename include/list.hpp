@@ -12,7 +12,7 @@
 
 namespace sc::regular{
 
-    using namespace sc::utils;
+    using sc::utils::list_node;
 
     //doubly-linked list with sentinel node
     template <class T>
@@ -162,11 +162,7 @@ namespace sc::regular{
          */
 
         // merge two sorted lists
-        void merge( list& other);
         void merge( list&& other);
-
-        template <class Compare>
-                void merge( list& other, Compare comp);
 
         template <class Compare>
                 void merge( list&& other, Compare comp);
@@ -174,8 +170,13 @@ namespace sc::regular{
         // splice: transfers elements from one list to another
         // No elements are copied or moved, only the
         // internal pointers of the list nodes are re-pointed
-        void splice( const_iterator pos, list& other);
-        void splice( const iterator pos, list&& other);
+        void splice( const_iterator pos, list&& other);
+
+        //transfer the element pointed to by it, into *this at the position before pos
+        void splice( const_iterator pos, list&& other, const_iterator it);
+
+        //transfer the elements in the range[first,last), into *this at the position before pos
+        void splice( const_iterator pos, list&& other, const_iterator first, const_iterator last);
 
         // remove all elements of value, return the removed number
         size_type remove( const T& value);
@@ -263,7 +264,6 @@ namespace sc::regular{
     template<class T>
     list<T>::list(list &&other) noexcept {
         node_ = std::move(other.node_);
-        other.node_ = nullptr;
         size_ = other.size();
         other.size_ = 0;
     }
@@ -291,7 +291,6 @@ namespace sc::regular{
     list<T> &list<T>::operator=(list &&other) noexcept {
         clear();
         node_ = std::move(other.node_);
-        other.node_ = nullptr;
         size_ = other.size();
         other.size_ = 0;
     }
@@ -631,6 +630,187 @@ namespace sc::regular{
         other.node_ = tmp;
 
         std::swap(size_, other.size_);
+    }
+
+    // merge two sorted lists.
+    // if two lists are not sorted, this function is undefined behaviour
+    template<class T>
+    void list<T>::merge(list &&other) {
+        // if other and this points to the same object, this function has no effect
+        if(other == *this)
+            return;
+
+        list_node<T>* current1 = node_.next_;
+        list_node<T>* current2 = other.node_.next_;
+
+        while(current1!= &node_ && current2 != &node_){
+            if(current1->val_ > current2->val_){
+                // record the next position of current2
+                list_node<T>* new2 = current2->next_;
+
+                //insert current2 before current1;
+                current1->prev_->next_ = current2;
+                current2->prev_ = current1->prev_;
+
+                current1->prev_ = current2;
+                current2->next_ = current1;
+
+                // adjust the size of two lists
+                ++size_;
+                --other.size_;
+
+                //proceed current2
+                current2 = new2;
+            }else{
+                current1 = current1->next_;
+            }
+
+        }
+
+        // if there'are still elements in other, move it at the end of current1;
+        if(current2 != &node_){
+            // now current1 points to header node
+            assert(current1 == &node_);
+            current1->prev_->next_ = current2;
+            current2->prev_ = current1->prev_;
+
+            node_.prev_ = other.node_.prev_;
+            node_.prev_->next_ = &node_;
+
+            //adjust the size
+            size_ += other.size_;
+
+            // make other list empty
+            other.node_.next_ = &(other.node_);
+            other.node_.prev_ = &(other.node_);
+            other.size_ = 0;
+        }
+
+
+    }
+
+    // precondition: two lists are sorted in this comparator sequence
+    template<class T>
+    template<class Compare>
+    void list<T>::merge(list &&other, Compare comp) {
+
+        // if other and this points to the same object, this function has no effect
+        if(other == *this)
+            return;
+
+        list_node<T>* current1 = node_.next_;
+        list_node<T>* current2 = other.node_.next_;
+
+        while(current1!= &node_ && current2 != &node_){
+            // compare current2 and current1 gets true (current2<current1 under std::less)
+            if(comp(current2->val_,current1->val_)){
+                // record the next position of current2
+                list_node<T>* new2 = current2->next_;
+
+                //insert current2 before current1;
+                current1->prev_->next_ = current2;
+                current2->prev_ = current1->prev_;
+
+                current1->prev_ = current2;
+                current2->next_ = current1;
+
+                // adjust the size of two lists
+                ++size_;
+                --other.size_;
+
+                //proceed current2
+                current2 = new2;
+            }else{
+                current1 = current1->next_;
+            }
+
+        }
+
+        // if there'are still elements in other, move it at the end of current1;
+        if(current2 != &node_){
+            // now current1 points to header node
+            assert(current1 == &node_);
+            current1->prev_->next_ = current2;
+            current2->prev_ = current1->prev_;
+
+            node_.prev_ = other.node_.prev_;
+            node_.prev_->next_ = &node_;
+
+            // adjust the size
+            size_ += other.size_;
+
+            // make other list empty
+            other.node_.next_ = &(other.node_);
+            other.node_.prev_ = &(other.node_);
+            other.size_ = 0;
+        }
+    }
+
+    template<class T>
+    void list<T>::splice(list::const_iterator pos, list &&other) {
+        // if other list is empty, this function has no effect
+        if(other.size_ == 0)
+            return;
+
+        list_node<T>* current = &(*pos); // the node to be inserted before
+
+        // insert the first node before pos
+        current->prev_->next_ = other.node_.next_;
+        other.node_.next_->prev_ = current->prev_;
+
+        // link the last node to pos
+        other.node_.prev_->next_ = current;
+        current->prev_ = other.node_.prev_;
+
+        // adjust the size
+        size_ += other.size_;
+
+        // make other list emtpy
+        other.size_ = 0;
+        other.node_.next_ = &(other.node_);
+        other.node_.prev_ = &(other.node_);
+    }
+
+    // if it points to an element in *this, this function has undefined behaviour
+    template<class T>
+    void list<T>::splice(list::const_iterator pos, list &&other, list::const_iterator it) {
+        list_node<T>* current = &(*pos);
+
+        current->prev_->next_ = &(*it);
+        it->prev_ = current->prev_;
+
+        current->prev_ = &(*it);
+        it->next_ = current; //note here unused
+
+        ++size_;
+        --other.size_;
+
+    }
+
+    // if [first,last) is in *this, this function has undefined behaviour
+    template<class T>
+    void list<T>::splice(list::const_iterator pos, list &&other, list::const_iterator first, list::const_iterator last) {
+        list_node<T>* prev = first->prev; //record the previous node before first
+        size_type old_size = size_;
+
+        insert(pos,first,last);
+
+        // connect the broken link in other;
+        prev->next_ = &(*last);
+        last->prev_ = prev;
+
+        other.size_ -= (size_ - old_size);
+
+    }
+
+    template<class T>
+    typename list<T>::size_type list<T>::remove(const T &value) {
+
+    }
+
+    template<class T>
+    void list<T>::reverse() {
+
     }
 
 }
