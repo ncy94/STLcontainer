@@ -847,6 +847,71 @@ namespace sc::regular{
 
     }
 
+    template <class T>
+    bool operator==(const list<T> &l1, const list<T> &l2) {
+        if(l1.size_ == l2.size_) {
+            for (auto iter1 = l1.begin(), iter2 = l2.begin(); iter1 != l1.end(); ++iter1, ++iter2){
+                if(iter1->val_ != iter2->val_)
+                    break;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    template <class T>
+    bool operator!=(const list<T> &l1, const list<T> &l2){
+        return !(l1 == l2);
+    }
+
+    // lexically compare two lists
+    template <class T>
+    bool operator>(const list<T> &l1, const list<T> &l2){
+        if(l1.size_ == l2.size_){
+            for (auto iter1 = l1.begin(), iter2 = l2.begin(); iter1 != l1.end(); ++iter1, ++iter2){
+                // if the current element is the same, compare the next
+                if(iter1->val_ == iter2->val_)
+                    continue;
+                // the first different element determines the result
+                return (iter1->val > iter2->val);
+            }
+            // if all elements are equal, return false
+            return false;
+        }
+
+        // if two lists are of different length, the list with bigger length is bigger
+        return (l1.size_ > l2.size_);
+    }
+
+    template <class T>
+    bool operator<(const list<T> &l1, const list<T> &l2){
+        if(l1.size_ == l2.size_){
+            for (auto iter1 = l1.begin(), iter2 = l2.begin(); iter1 != l1.end(); ++iter1, ++iter2){
+                // if the current element is the same, compare the next
+                if(iter1->val_ == iter2->val_)
+                    continue;
+                // the first different element determines the result
+                return (iter1->val < iter2->val);
+            }
+            // if all elements are equal, return false
+            return false;
+        }
+
+        // if two lists are of different length, the list with bigger length is bigger
+        return (l1.size_ < l2.size_);
+    }
+
+    template <class T>
+    bool operator>=(const list<T> &l1, const list<T> &l2){
+        return !(l1 < l2);
+    }
+
+    template <class T>
+    bool operator<=(const list<T> &l1, const list<T> &l2){
+        return !(l1 > l2);
+    }
+
+
 }
 
 #endif //STLCONTAINER_LIST_HPP
