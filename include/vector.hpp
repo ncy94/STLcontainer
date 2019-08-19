@@ -52,10 +52,10 @@ namespace sc::regular{
         //destructor
         ~vector();
 
-        //assign the value of the size in the container
+        //assign the value of the size in the container, no strong guarantee yet
         void assign(size_type count, const value_type& value);
 
-        //assign the contents in the range [first, last)
+        //assign the contents in the range [first, last), no strong guarantee yet
         template <class InputIterator>
         void assign(InputIterator first, InputIterator last);
 
