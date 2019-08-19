@@ -269,30 +269,39 @@ namespace sc::regular{
     }
 
     template<class T>
-    list<T> &list<T>::operator=(const list &other) {
-        clear();
-        list_node<T>* des = &node_;
-        list_node<T>* src = &(other.node_);
-        while(size_ < other.size()){
-            des->next_ = new list_node(src->val_);
-            des->next_->prev_ = des;
+    list<T> &list<T>::operator=(const list &other){
+        // alwasy check self assigment first
+        if(*this != other) {
+            clear();
+            list_node<T> *des = &node_;
+            list_node<T> *src = &(other.node_);
+            while (size_ < other.size()) {
+                des->next_ = new list_node(src->val_);
+                des->next_->prev_ = des;
 
-            //proceed both nodes
-            des = des->next_;
-            src = src->next_;
-            size_ += 1;
+                //proceed both nodes
+                des = des->next_;
+                src = src->next_;
+                size_ += 1;
+            }
+            des->next_ = &node_;
+            // src should points to the sentinel node at this time
+            assert(src->next_ == other.end());
         }
-        des->next_ = &node_;
-        // src should points to the sentinel node at this time
-        assert(src->next_ == other.end());
+
+        return *this;
     }
 
     template<class T>
     list<T> &list<T>::operator=(list &&other) noexcept {
-        clear();
-        node_ = std::move(other.node_);
-        size_ = other.size();
-        other.size_ = 0;
+        // always check self assignment first
+        if(*this != other) {
+            clear();
+            node_ = std::move(other.node_);
+            size_ = other.size();
+            other.size_ = 0;
+        }
+        return *this;
     }
 
     template<class T>
