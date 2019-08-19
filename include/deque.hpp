@@ -6,6 +6,7 @@
 #define STLCONTAINER_DEQUE_HPP
 
 #include <functional>
+#include <cmath>
 #include "deque_iterator.hpp"
 
 
@@ -15,6 +16,8 @@ namespace sc::regular{
     // and has stable references.
     template <class T>
     class deque{
+
+    public:
 
         //declare member types
         using value_type = T;
@@ -41,9 +44,11 @@ namespace sc::regular{
 
         //declare member functions
         //default constructor
-        deque()noexcept : map_(nullptr), size_(0), start_(nullptr), finish_(nullptr) {}
 
-        explicit deque(size_type size);
+        explicit deque(size_type count);
+
+        template <class InputIt>
+        deque( InputIt first, InputIt last);
 
         //copy constructor/assignment
         deque(const deque&);
@@ -186,6 +191,55 @@ namespace sc::regular{
         iterator finish_; // iterator for last element in queue
 
     };
+
+    template <class T>
+    deque<T>::deque(deque::size_type count) {
+        size_ = ceil((float)count / BLOCK_SIZE);
+        size_type block_offset = count % BLOCK_SIZE;
+        map_ = static_cast<T**>(::operator new(size_ * sizeof(T*)));
+        for(int i=0; i<size_; ++i){
+            *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
+        }
+
+        // initialize start iterator
+        start_(map_, *map_);
+
+        //initialize finish iterator
+        //start_ and finish_ points to the same element
+        finish_(map_, *map_);
+
+    }
+
+    template<class T>
+    template<class InputIt>
+    deque<T>::deque(InputIt first, InputIt last) {
+        size_type element_count = last - first;
+
+        // call default construction
+        this->deque(element_count);
+
+        // provide strong exception guarantee
+        try {
+            for (int i=0, iter=first; i<size_; ++i) {
+                if(i == size_-1){
+                    // copy the last block
+                    finish_.ptr_ = std::uninitialized_copy(iter, last, finish_.first_);
+                    assert(last - iter == element_count % BLOCK_SIZE);
+                } else {
+                    // copy the entire block
+                    std::uninitialized_copy(iter, iter + BLOCK_SIZE, finish_.first_);
+                    finish_ += BLOCK_SIZE;
+                }
+            }
+        }catch (...){
+            // if throws, deallocates all allocated memory
+            for(int i=0; i<size_; ++i){
+                ::operator delete(*(map_+i));
+            }
+            ::operator delete(map_);
+        }
+
+    }
 }
 
 #endif //STLCONTAINER_DEQUE_HPP
