@@ -50,13 +50,13 @@ namespace sc::regular{
         template <class InputIt>
         deque( InputIt first, InputIt last);
 
-        //copy constructor/assignment
+        //copy/move constructor
         deque(const deque&);
-        deque& operator=(const deque&);
-
-        //move constructor/assignment
         deque(deque&&) noexcept ;
-        deque& operator=(deque&&) noexcept ;
+
+        //copy/move assignment operator
+        //use copy-and-swap idiom and copy elision for better efficiency
+        deque&operator=(deque other);
 
         //destructor
         ~deque();
@@ -184,6 +184,8 @@ namespace sc::regular{
 
         friend bool operator>=(const deque&, const deque&);
 
+        friend void swap(deque& q1, deque& q2);
+
     private:
         T** map_; // array of block pointers
         size_type size_; // the size of map array
@@ -240,6 +242,25 @@ namespace sc::regular{
         }
 
     }
+
+    // this function has no-throw guarantee because std::swap does not throw
+    template <class T>
+    void swap(deque<T> &q1, deque<T> &q2) {
+        // by swapping the pointers, the two containers are effectively swapped
+        std::swap(q1.map_, q2.map_);
+        std::swap(q1.size_, q2.size_);
+        std::swap(q1.start_, q2.start_);
+        std::swap(q1.finish_, q2.finish_);
+    }
+
+    template<class T>
+    deque<T> &deque<T>::operator=(deque other) {
+        // use copy-and-swap idiom here
+        swap(*this, other);
+
+        return *this;
+    }
+
 }
 
 #endif //STLCONTAINER_DEQUE_HPP
