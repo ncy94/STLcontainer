@@ -7,6 +7,11 @@
 
 #include <type_traits>
 
+//forward declaration
+namespace sc::regular{
+    template <class> class deque;
+}
+
 namespace sc::utils{
 
     // use CRTP idiom to prevent post-increment returns abstract class
@@ -52,6 +57,7 @@ namespace sc::utils{
 
 
     protected:
+        template <class> friend class sc::regular::deque;
         template <class> friend class list_iterator;
         template <class> friend class array_iterator;
         template <class> friend class iterator_base;

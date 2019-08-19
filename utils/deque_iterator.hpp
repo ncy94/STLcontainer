@@ -7,6 +7,13 @@
 
 #include "iterator_base.hpp"
 
+#define BLOCK_SIZE 8
+
+// forward declaration
+namespace sc::regular{
+    template <class> class deque;
+}
+
 namespace sc::utils{
 
     template <class T>
@@ -17,6 +24,14 @@ namespace sc::utils{
         using typename iterator_base<T, deque_iterator<T>>::difference_type ;
         using typename iterator_base<T, deque_iterator<T>>::pointer;
         using typename iterator_base<T, deque_iterator<T>>::reference;
+
+        // initialize by a map pointer and a current pointer
+        deque_iterator(const T** block, const T* current){
+            block_ = block;
+            first_ = *block;
+            last_ = first_ + BLOCK_SIZE;
+            ptr_ = current;
+        }
 
         deque_iterator&operator++(){
             // if it's at the end of current block, move to the next block
@@ -43,6 +58,7 @@ namespace sc::utils{
 
 
     private:
+        template <class> friend class sc::regular::deque;
         // move to the next block
         void nextblock();
         T* first_; // pointer to first element in block
