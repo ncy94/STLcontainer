@@ -6,7 +6,7 @@
 #define STLCONTAINER_DEQUE_HPP
 
 #include <functional>
-#include "deque_iterator"
+#include "deque_iterator.hpp"
 
 
 namespace sc::regular{
@@ -83,7 +83,7 @@ namespace sc::regular{
 
         //access the back element, returns its reference
         reference back() ;
-        const_ref back() ;
+        const_ref back() const;
 
         /*
          * Iterators
