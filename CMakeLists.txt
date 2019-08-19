@@ -25,5 +25,5 @@ target_link_libraries(test_vector PUBLIC container_library)
 add_executable(test_list app/test_list.cpp)
 target_link_libraries(test_list PUBLIC container_library)
 
-add_executable(test_deque app/test_deque.hpp)
+add_executable(test_deque app/test_deque.cpp)
 target_link_libraries(test_deque PUBLIC container_library)
