@@ -203,12 +203,12 @@ namespace sc::regular{
             *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
         }
 
-        // initialize start iterator
-        start_.set(map_, *map_);
+        // initialize start iterator, right in the middle of map_
+        start_.set(map_+size_/2);
 
         //initialize finish iterator
         //start_ and finish_ points to the same element
-        finish_.set(map_, *map_);
+        finish_.set(map_+size_/2);
 
     }
 
@@ -217,8 +217,16 @@ namespace sc::regular{
     deque<T>::deque(InputIt first, InputIt last) {
         size_type element_count = last - first;
 
-        // call default construction
-        this->deque(element_count); //size_ uninitialized? remember to test
+        size_ = ceil((float)element_count / BLOCK_SIZE);
+        size_type block_offset = element_count % BLOCK_SIZE;
+        map_ = static_cast<T**>(::operator new(size_ * sizeof(T*)));
+        for(int i=0; i<size_; ++i){
+            *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
+        }
+
+        // inititialize start,finish iterator, at the beginning of map
+        start_.set(map_);
+        finish_.set(map_);
 
         // provide strong exception guarantee
         try {
@@ -245,8 +253,16 @@ namespace sc::regular{
 
     template<class T>
     deque<T>::deque(const deque &other) {
-        // first call default constructor
-        deque(other.size_);
+
+        size_ = other.size_;
+        map_ = static_cast<T**>(::operator new(size_ * sizeof(T*)));
+        for(int i=0; i<size_; ++i){
+            *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
+        }
+
+        // inititialize start,finish iterator according to other
+        start_.set(map_ + (other.start_.block_-other.map_), other.start_.ptr_ - other.start_.first_);
+        finish_ = start_;
 
         // provide strong exception guarantee
         try {
@@ -310,6 +326,12 @@ namespace sc::regular{
             ::operator delete(*(map_+i));
         }
         ::operator delete(map_);
+    }
+
+    template<class T>
+    void deque<T>::assign(deque::size_type count, const value_type &value) {
+
+
     }
 
 
