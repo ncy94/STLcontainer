@@ -25,6 +25,8 @@ namespace sc::utils{
         using typename iterator_base<T, deque_iterator<T>>::pointer;
         using typename iterator_base<T, deque_iterator<T>>::reference;
 
+        deque_iterator():iterator_base<T,deque_iterator>(), first_(nullptr), last_(nullptr), block_(nullptr){}
+
         deque_iterator(const deque_iterator& other): iterator_base<T,deque_iterator>(other), first_(other.first_), last_(other.last_), block_(other.block_){}
         deque_iterator(deque_iterator&& other) noexcept {
             ptr_ = other.ptr_;
