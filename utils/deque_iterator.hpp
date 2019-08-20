@@ -25,8 +25,26 @@ namespace sc::utils{
         using typename iterator_base<T, deque_iterator<T>>::pointer;
         using typename iterator_base<T, deque_iterator<T>>::reference;
 
+        deque_iterator(const deque_iterator& other): iterator_base<T,deque_iterator>(other), first_(other.first_), last_(other.last_), block_(other.block_){}
+        deque_iterator(deque_iterator&& other) noexcept {
+            ptr_ = other.ptr_;
+            other.ptr_ = nullptr;
+            first_ = other.first_;
+            other.first_ = nullptr;
+            last_ = other.last_;
+            other.last_ = nullptr;
+            block_ = other.block_;
+            other.block_ = nullptr;
+        }
+
+        // copy and move assignment
+        deque_iterator operator=(deque_iterator other){
+            swap(*this, other);
+            return *this;
+        }
+
         // initialize by a map pointer and a current pointer
-        void set(T** block, difference_type offset){
+        void set(T** block, difference_type offset=0){
             block_ = block;
             first_ = *block;
             last_ = first_ + BLOCK_SIZE;
@@ -148,6 +166,18 @@ namespace sc::utils{
             deque_iterator tmp(*this);
             tmp -= n;
             return tmp;
+        }
+
+        /*
+         * Swap
+         */
+
+        // by swapping the pointers, two iterators are effectively swapped
+        friend void swap(deque_iterator& i1, deque_iterator& i2){
+            std::swap(i1.ptr_, i2.ptr_);
+            std::swap(i1.first_, i2.first_);
+            std::swap(i1.last_, i2.last_);
+            std::swap(i1.block_, i2.block_);
         }
 
         /*
