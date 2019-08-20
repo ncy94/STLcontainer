@@ -444,11 +444,31 @@ namespace sc::regular{
 
     template<class T>
     void deque<T>::shrink_to_fit() {
-        deque other(begin(), end());
+        // allocates memory for new map
+        difference_type new_size = finish_-start_+1;
+        T** new_map = static_cast<T**>(::operator new(new_size * sizeof(T*)));
+        for(int i=0; i<new_size; ++i)
+            *(new_map+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
 
-        swap(*this, other);
+        difference_type start_offset = start_.ptr_ - start_.first_;
+        difference_type finish_offset = finish_.ptr_ - finish_.first_;
 
-        return *this;
+        // move the elements to the new container
+        try {
+            for(int i=0; i<new_size; ++i){
+                std::uninitialized_move(*(start_.block_+i), *(start_.block_+i)+BLOCK_SIZE, *(new_map+i));
+            }
+        }catch (...){
+            // if throws, deallocate new memory
+            for(int i=0; i<new_size; ++i)
+                ::operator delete(*(new_map+i));
+            ::operator delete(new_map);
+        }
+
+        // deallocate the old container
+        for(int i=0; i<size_; ++i)
+            ::operator delete(*(map_+i));
+        ::operator delete(map_);
     }
 
     template<class T>
