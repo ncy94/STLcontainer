@@ -125,6 +125,7 @@ namespace sc::regular{
         void clear();
 
         // insert the value before iter, return the iterator points to the inserted element
+        // this function invalidates iterators and references
         iterator insert(iterator iter, const value_type& value);
         const_iterator insert(const_iterator citer, const value_type& value);
 
@@ -133,6 +134,7 @@ namespace sc::regular{
         reference emplace(const_iterator citer, Args&&... args);
 
         // erase the element at the position of iter
+        // this function invalidates iterators and references
         iterator erase(iterator iter);
         iterator erase(const_iterator citer);
 
@@ -292,12 +294,10 @@ namespace sc::regular{
     deque<T>::deque(deque &&other) noexcept {
         map_ = other.map_;
         other.map_ = nullptr;
-        start_ = other.start_;
-        other.start_ = nullptr;
-        finish_ = other.finish_;
-        other.finish_ = nullptr;
-        size_ = other.size_;
-        other.size_ = nullptr;
+        start_ = std::move(other.start_);
+        finish_ = std::move(other.finish_);
+        size_ = std::move(other.size_);
+
     }
 
     // this function has no-throw guarantee because std::swap does not throw
@@ -435,7 +435,7 @@ namespace sc::regular{
 
     template<class T>
     typename deque<T>::size_type deque<T>::size() const {
-        return(finish_-start_-1)*BLOCK_SIZE + (finish_.ptr_-finish_.first_+1) + (start_.last_-start_.ptr_);
+        return finish_-start_+1;
     }
 
     template<class T>
@@ -486,6 +486,7 @@ namespace sc::regular{
 
     template<class T>
     void deque<T>::growrear(deque::size_type n) {
+        assert(size_ > 0);
         size_type new_size = ceil(n/BLOCK_SIZE);
         if(new_size == size_)
             return;
@@ -540,6 +541,7 @@ namespace sc::regular{
 
     template<class T>
     void deque<T>::growfront(deque::size_type n) {
+        assert(size_ > 0);
         size_type new_size = ceil(n/BLOCK_SIZE);
 
         if(new_size == size_)
@@ -590,6 +592,122 @@ namespace sc::regular{
         map_ = new_map;
         start_.set(new_map, start_offset);
         finish_.set(new_map+new_size-1, finish_offset);
+
+    }
+
+    // insert invalidates iterators and references
+    template<class T>
+    typename deque<T>::iterator deque<T>::insert(deque::iterator iter, const value_type &value) {
+        // if the container is full, double the size
+        if(finish_.block_ == map_+size_-1 && finish_.ptr_ == finish_.last_-1)
+            growrear(2 * BLOCK_SIZE * size_);
+
+        //shift from the end by 1
+        for(auto i = end(); i>iter; --i){
+            *i = *(i-1);
+        }
+        *iter = value;
+
+        ++finish_;
+        return iter;
+    }
+
+    template<class T>
+    typename deque<T>::iterator deque<T>::erase(deque::iterator iter) {
+        difference_type n = iter - start_;
+
+        std::destroy_at((start_+n).ptr_);
+        for(iterator i = start_+n; i!=end(); ++i)
+            *i = *(i+1);
+
+        --finish_;
+        std::destroy_at(finish_.ptr_);
+
+        // if the unused space is more than half, shrink to fit
+        if(finish_-start_+1 <= size_*BLOCK_SIZE/2)
+            shrink_to_fit();
+
+        return start_+n;
+
+    }
+
+    template<class T>
+    void deque<T>::push_back(const value_type &value) {
+        if(finish_.block_ == map_+size_-1 && finish_.ptr_ == finish_.last_-1)
+            growrear(2 * BLOCK_SIZE * size_);
+
+        finish_.ptr_ = value;
+        ++finish_;
+    }
+
+    template<class T>
+    void deque<T>::push_back(value_type &&value) {
+        if(finish_.block_ == map_+size_-1 && finish_.ptr_ == finish_.last_-1)
+            growrear(2 * BLOCK_SIZE * size_);
+
+        finish_.ptr_ = std::move(value);
+        ++finish_;
+    }
+
+    template<class T>
+    void deque<T>::pop_back() {
+        --finish_;
+        std::destroy_at(finish_.ptr_);
+
+        if(size() < size_*BLOCK_SIZE/2)
+            shrink_to_fit();
+    }
+
+    template<class T>
+    void deque<T>::push_front(const T &value) {
+        if(start_.block_ == map_ && start_.ptr_ == start_.first_)
+            growfront(2 * BLOCK_SIZE * size_);
+
+        --start_;
+        start_.ptr_ = value;
+    }
+
+    template<class T>
+    void deque<T>::push_front(T &&value) {
+        if(start_.block_ == map_ && start_.ptr_ == start_.first_)
+            growfront(2 * BLOCK_SIZE * size_);
+
+        --start_;
+        start_.ptr_ = std::move(value);
+    }
+
+    template<class T>
+    void deque<T>::pop_front() {
+        std::destroy_at(start_.ptr_);
+        ++start_;
+
+        if(size() < size_*BLOCK_SIZE/2)
+            shrink_to_fit();
+
+    }
+
+    template<class T>
+    void deque<T>::resize(deque::size_type size) {
+        growrear(size);
+
+        if(size > this->size_){
+            std::uninitialized_default_construct(finish_.ptr_, finish_.last_);
+            for(int i=finish_.block_-start_.block_+1; i< size_; ++i){
+                std::uninitialized_default_construct_n(*(map_+i), BLOCK_SIZE);
+            }
+        }
+    }
+
+    template<class T>
+    void deque<T>::resize(deque::size_type size, const value_type &value) {
+        growrear(size);
+
+        if(size > this->size_){
+            std::uninitialized_fill(finish_.ptr_, finish_.last_, value);
+            for(int i=finish_.block_-start_.block_+1; i< size_; ++i){
+                std::uninitialized_fill_n(*(map_+i), BLOCK_SIZE, value);
+            }
+        }
 
     }
 
