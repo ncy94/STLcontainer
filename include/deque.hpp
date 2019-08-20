@@ -486,13 +486,14 @@ namespace sc::regular{
 
     template<class T>
     void deque<T>::growrear(deque::size_type n) {
-        if(n == size_)
+        size_type new_size = ceil(n/BLOCK_SIZE);
+        if(new_size == size_)
             return;
 
         // allocate new memory
-        T** new_map = static_cast<T**>(::operator new(n* sizeof(T*)));
+        T** new_map = static_cast<T**>(::operator new(new_size* sizeof(T*)));
 
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<new_size; ++i)
             *(new_map+i) = static_cast<T*>(::operator new(BLOCK_SIZE* sizeof(T)));
 
         difference_type finish_offset = finish_.ptr_ - finish_.first_;
@@ -500,7 +501,7 @@ namespace sc::regular{
 
         // move the elements
         try {
-            if(n > size_) {
+            if(new_size > size_) {
                 for (int i = 0; i < size_; ++i) {
                     if (i == size_ - 1)
                         std::uninitialized_move(finish_.first_, finish_.ptr_, *(new_map + i));
@@ -509,17 +510,17 @@ namespace sc::regular{
                 }
             }
             else{ // if n is less than current size, destroy the extra elements
-                for(int i=0; i<n; ++i){
+                for(int i=0; i<new_size; ++i){
                     std::uninitialized_move(*(map_+i), *(map_+i)+BLOCK_SIZE, *(new_map+i));
                 }
                 //destroy the extra elements
-                for(iterator i = *(map_+n); i!=end(); ++i)
+                for(iterator i = *(map_+new_size); i!=end(); ++i)
                     std::destroy_at(i);
             }
 
         }catch (...){
             // if move throws, deallocate these memory
-            for(int i=0; i<n; ++i)
+            for(int i=0; i<new_size; ++i)
                 ::operator delete(*(new_map+i));
             ::operator delete(new_map);
         }
@@ -530,23 +531,24 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
-        size_ = n;
+        size_ = new_size;
         map_ = new_map;
         start_.set(new_map, start_offset);
-        finish_.set(new_map+n-1, finish_offset);
+        finish_.set(new_map+size_-1, finish_offset);
 
     }
 
     template<class T>
     void deque<T>::growfront(deque::size_type n) {
+        size_type new_size = ceil(n/BLOCK_SIZE);
 
-        if(n == size_)
+        if(new_size == size_)
             return;
 
         // allocate new memory
-        T** new_map = static_cast<T**>(::operator new(n* sizeof(T*)));
+        T** new_map = static_cast<T**>(::operator new(new_size* sizeof(T*)));
 
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<new_size; ++i)
             *(new_map+i) = static_cast<T*>(::operator new(BLOCK_SIZE* sizeof(T)));
 
         difference_type finish_offset = finish_.ptr_ - finish_.first_;
@@ -554,26 +556,26 @@ namespace sc::regular{
 
         // move the elements
         try {
-            if(n > size_) {
-                for (int i = n-1; i >= n-size_; --i) {
-                    if (i == n-size_)
+            if(new_size > size_) {
+                for (int i = new_size-1; i >= new_size-size_; --i) {
+                    if (i == new_size-size_)
                         std::uninitialized_move(finish_.first_, finish_.ptr_, *(new_map + i));
                     else
                         std::uninitialized_move(*(map_ + i), *(map_ + i) + BLOCK_SIZE, *(new_map + i));
                 }
             }
             else{ // if n is less than current size, destroy the extra elements
-                for(int i=0; i<n; ++i){
-                    std::uninitialized_move(*(map_+i), *(map_+i)+BLOCK_SIZE, *(new_map+n-1-i));
+                for(int i=0; i<new_size; ++i){
+                    std::uninitialized_move(*(map_+i), *(map_+i)+BLOCK_SIZE, *(new_map+new_size-1-i));
                 }
                 //destroy the extra elements
-                for(iterator i= begin(); i != *(map_+(size_-n)-1)+BLOCK_SIZE; ++i)
+                for(iterator i= begin(); i != *(map_+(size_-new_size)-1)+BLOCK_SIZE; ++i)
                     std::destroy_at(i);
             }
 
         }catch (...){
             // if move throws, deallocate these memory
-            for(int i=0; i<n; ++i)
+            for(int i=0; i<new_size; ++i)
                 ::operator delete(*(new_map+i));
             ::operator delete(new_map);
         }
@@ -584,10 +586,10 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
-        size_ = n;
+        size_ = new_size;
         map_ = new_map;
         start_.set(new_map, start_offset);
-        finish_.set(new_map+n-1, finish_offset);
+        finish_.set(new_map+new_size-1, finish_offset);
 
     }
 
