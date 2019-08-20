@@ -95,12 +95,12 @@ namespace sc::regular{
          */
 
         //returns an iterator to the begin of the elements
-        iterator being() {return iterator(front());}
-        const_iterator begin() const {return const_iterator(front());}
+        iterator being() {return start_;}
+        const_iterator begin() const {return start_;}
 
         //returns an iterator to the end of the elements
-        iterator end() {return iterator(end());}
-        const_iterator end() const { return const_iterator(end());}
+        iterator end() {return finish_;}
+        const_iterator end() const { return finish_;}
 
         /*
          * Capacity
@@ -206,12 +206,12 @@ namespace sc::regular{
             *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
         }
 
-        // initialize start iterator, right in the middle of map_
-        start_.set(map_+size_/2);
+        // initialize start iterator
+        start_.set(map_);
 
         //initialize finish iterator
         //start_ and finish_ points to the same element
-        finish_.set(map_+size_/2);
+        finish_.set(map_);
 
     }
 
@@ -392,8 +392,46 @@ namespace sc::regular{
             }
             ::operator delete(map_);
         }
+    }
 
+    template<class T>
+    typename deque<T>::reference deque<T>::at(deque::size_type pos) {
+        return start_[pos];
+    }
 
+    template<class T>
+    typename deque<T>::const_ref deque<T>::at(deque::size_type pos) const {
+        return start_[pos];
+    }
+
+    template<class T>
+    typename deque<T>::reference deque<T>::operator[](deque::size_type pos) {
+        return start_[pos];
+    }
+
+    template<class T>
+    typename deque<T>::const_ref deque<T>::operator[](deque::size_type pos) const {
+        return start_[pos];
+    }
+
+    template<class T>
+    typename deque<T>::reference deque<T>::front() {
+        return *(start_.first_);
+    }
+
+    template<class T>
+    typename deque<T>::const_ref deque<T>::front() const {
+        return *(start_.first_);
+    }
+
+    template<class T>
+    typename deque<T>::reference deque<T>::back() {
+        return *(finish_.last_-1);
+    }
+
+    template<class T>
+    typename deque<T>::const_ref deque<T>::back() const {
+        return *(finish_.last_-1);
     }
 
 
