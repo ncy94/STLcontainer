@@ -187,6 +187,10 @@ namespace sc::regular{
         friend void swap(deque& q1, deque& q2);
 
     private:
+        void growfront(size_type n);
+        void growrear(size_type n);
+        void contractfront(size_type n);
+        void contractrear(size_type n);
         T** map_; // array of block pointers
         size_type size_; // the size of map array
         iterator start_; // iterator for first element in queue
@@ -197,7 +201,6 @@ namespace sc::regular{
     template <class T>
     deque<T>::deque(deque::size_type count) {
         size_ = ceil((float)count / BLOCK_SIZE);
-        size_type block_offset = count % BLOCK_SIZE;
         map_ = static_cast<T**>(::operator new(size_ * sizeof(T*)));
         for(int i=0; i<size_; ++i){
             *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
@@ -330,6 +333,65 @@ namespace sc::regular{
 
     template<class T>
     void deque<T>::assign(deque::size_type count, const value_type &value) {
+        //clear the deque first
+        clear();
+
+        //adjust size
+        if(count > size())
+            growrear(count);
+
+        size_type block_offset = count % BLOCK_SIZE;
+
+        // provide strong exception guarantee
+        try {
+            for(int i=0; i<size_; ++i){
+                if(i != size_ -1)
+                    std::uninitialized_fill_n(*(map_+i), BLOCK_SIZE, value);
+                else
+                    std::uninitialized_fill_n(*(map_+i), block_offset, value);
+            }
+            finish_.set(*(map_+size_-1), block_offset);
+        }catch (...){
+            for(int i=0; i<size_; ++i)
+                ::operator delete(*(map_+i));
+            ::operator delete(map_);
+        }
+
+
+    }
+
+    template<class T>
+    template<class InputIterator>
+    void deque<T>::assign(InputIterator first, InputIterator last) {
+        //clear the deque first
+        clear();
+
+        size_type element_count = last-first;
+
+        //adjust size
+        if(last-first > size())
+            growrear(last-first);
+
+        // provide strong exception guarantee
+        try {
+            for (int i=0, iter=first; i<size_; ++i) {
+                if(i == size_-1){
+                    // copy the last block
+                    finish_.ptr_ = std::uninitialized_copy(iter, last, finish_.first_);
+                    assert(last - iter == element_count % BLOCK_SIZE);
+                } else {
+                    // copy the entire block
+                    std::uninitialized_copy(iter, iter + BLOCK_SIZE, finish_.first_);
+                    finish_ += BLOCK_SIZE;
+                }
+            }
+        }catch (...){
+            // if throws, deallocates all allocated memory
+            for(int i=0; i<size_; ++i){
+                ::operator delete(*(map_+i));
+            }
+            ::operator delete(map_);
+        }
 
 
     }
