@@ -26,11 +26,11 @@ namespace sc::utils{
         using typename iterator_base<T, deque_iterator<T>>::reference;
 
         // initialize by a map pointer and a current pointer
-        void set(T** block, T* current){
+        void set(T** block, difference_type offset){
             block_ = block;
             first_ = *block;
             last_ = first_ + BLOCK_SIZE;
-            ptr_ = current;
+            ptr_ = first_ + offset;
         }
 
         deque_iterator&operator++(){
