@@ -113,35 +113,71 @@ namespace sc::utils{
             return *this;
         }
 
-        deque_iterator&operator[](difference_type n){
+        deque_iterator&operator[](difference_type n) const{
             if(n>=0){
                 difference_type remain = last_ - ptr_ - 1;
 
                 difference_type blocknum = n>remain? ceil((float)(n-remain)/BLOCK_SIZE) : 0;
 
                 return *(*(block_+blocknum) + ((n-remain)%BLOCK_SIZE));
+            } else{
+                difference_type remain = ptr_ - first_;
+
+                difference_type blocknum = (-n)>remain? ceil((float)((-n)-remain)/BLOCK_SIZE) : 0;
+
+                if(blocknum == 0)
+                    return *(ptr_-n) ;
+                else
+                    return *(*(block_-blocknum) + (BLOCK_SIZE - (n-remain)%BLOCK_SIZE));
             }
         }
 
-        deque_iterator operator+(difference_type n){
+        deque_iterator operator+(difference_type n) const{
             deque_iterator tmp(*this);
             tmp += n;
             return tmp;
         }
 
-        difference_type operator-(const deque_iterator& other){
+        difference_type operator-(const deque_iterator& other) const{
             return (ptr_-first_+1) + (other.last_-other.ptr_) + (block_-other.block_-1)*BLOCK_SIZE;
         }
 
-        deque_iterator operator-(difference_type n){
+        deque_iterator operator-(difference_type n) const{
             deque_iterator tmp(*this);
             tmp -= n;
             return tmp;
         }
 
+        /*
+         * Comparison
+         */
 
+        bool operator>(const deque_iterator& other) const{
+            if(block_ == other.block_){
+                return ptr_>other.ptr_;
+            }
+            return block_>other.block_;
+        }
 
+        bool operator<(const deque_iterator& other) const{
+            return other > *this;
+        }
 
+        bool operator>=(const deque_iterator& other) const{
+            return !(*this < other);
+        }
+
+        bool operator<=(const deque_iterator& other) const{
+            return !(*this > other);
+        }
+
+        bool operator==(const deque_iterator& other) const{
+            return (block_==other.block_ && ptr_==other.ptr_);
+        }
+
+        bool operator!=(const deque_iterator& other) const{
+            return !(*this == other);
+        }
 
 
     private:
@@ -154,6 +190,13 @@ namespace sc::utils{
         T* last_; // pointer to end element in block
         T** block_; //pointer to current block
     };
+
+    template <class T>
+    deque_iterator<T> operator+(const deque_iterator<T>& i1, ptrdiff_t n){
+        deque_iterator tmp(i1);
+        tmp += n;
+        return tmp;
+    }
 
     template<class T>
     void deque_iterator<T>::nextblock() {

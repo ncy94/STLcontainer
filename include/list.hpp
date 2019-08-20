@@ -10,6 +10,7 @@
 #include <functional>
 #include <cassert>
 
+
 namespace sc::regular{
 
     using sc::utils::list_node;
