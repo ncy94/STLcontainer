@@ -365,6 +365,7 @@ namespace sc::regular{
         clear();
 
         size_type element_count = last-first;
+        size_ = ceil(element_count/BLOCK_SIZE);
 
         //adjust size
         if(last-first > size())
@@ -473,7 +474,7 @@ namespace sc::regular{
         size_ = new_size;
         map_ = new_map;
         start_.set(*map_, start_offset);
-        finish_.set(*(map_+size_), finish_offset);
+        finish_.set(*(map_+size_-1), finish_offset);
     }
 
     template<class T>
@@ -529,6 +530,7 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
+        size_ = n;
         map_ = new_map;
         start_.set(new_map, start_offset);
         finish_.set(new_map+n-1, finish_offset);
@@ -582,6 +584,7 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
+        size_ = n;
         map_ = new_map;
         start_.set(new_map, start_offset);
         finish_.set(new_map+n-1, finish_offset);
