@@ -189,8 +189,6 @@ namespace sc::regular{
     private:
         void growfront(size_type n);
         void growrear(size_type n);
-        void contractfront(size_type n);
-        void contractrear(size_type n);
         T** map_; // array of block pointers
         size_type size_; // the size of map array
         iterator start_; // iterator for first element in queue
@@ -276,7 +274,7 @@ namespace sc::regular{
                     assert(other.finish_.ptr_ - *(other.map_)-i == other.size_ % BLOCK_SIZE);
                 } else {
                     // copy the entire block
-                    std::uninitialized_copy_n((*other.map_+i), BLOCK_SIZE, finish_.first_);
+                    std::uninitialized_copy(*(other.map_+i), *(other.map_+i)+BLOCK_SIZE, finish_.first_);
                     finish_ += BLOCK_SIZE;
                 }
             }
@@ -451,6 +449,118 @@ namespace sc::regular{
         swap(*this, other);
 
         return *this;
+    }
+
+    template<class T>
+    void deque<T>::clear() {
+        for(int i=0; i<size_; ++i)
+            std::destroy_n(*(map_+i), BLOCK_SIZE);
+        std::destroy_n(map_, size_);
+    }
+
+    template<class T>
+    void deque<T>::growrear(deque::size_type n) {
+        if(n == size_)
+            return;
+
+        // allocate new memory
+        T** new_map = static_cast<T**>(::operator new(n* sizeof(T*)));
+
+        for(int i=0; i<n; ++i)
+            *(new_map+i) = static_cast<T*>(::operator new(BLOCK_SIZE* sizeof(T)));
+
+        difference_type finish_offset = finish_.ptr_ - finish_.first_;
+        difference_type start_offset = start_.ptr_ - start_.first_;
+
+        // move the elements
+        try {
+            if(n > size_) {
+                for (int i = 0; i < size_; ++i) {
+                    if (i == size_ - 1)
+                        std::uninitialized_move(finish_.first_, finish_.ptr_, *(new_map + i));
+                    else
+                        std::uninitialized_move(*(map_ + i), *(map_ + i) + BLOCK_SIZE, *(new_map + i));
+                }
+            }
+            else{ // if n is less than current size, destroy the extra elements
+                for(int i=0; i<n; ++i){
+                    std::uninitialized_move(*(map_+i), *(map_+i)+BLOCK_SIZE, *(new_map+i));
+                }
+                //destroy the extra elements
+                for(iterator i = *(map_+n); i!=end(); ++i)
+                    std::destroy_at(i);
+            }
+
+        }catch (...){
+            // if move throws, deallocate these memory
+            for(int i=0; i<n; ++i)
+                ::operator delete(*(new_map+i));
+            ::operator delete(new_map);
+        }
+
+        //deallocates the old container
+        for(int i=0; i<size_; ++i)
+            ::operator delete(*(map_+i));
+        ::operator delete(map_);
+
+        //change the pointer to the new map;
+        map_ = new_map;
+        start_.set(new_map, start_offset);
+        finish_.set(new_map+n-1, finish_offset);
+
+    }
+
+    template<class T>
+    void deque<T>::growfront(deque::size_type n) {
+
+        if(n == size_)
+            return;
+
+        // allocate new memory
+        T** new_map = static_cast<T**>(::operator new(n* sizeof(T*)));
+
+        for(int i=0; i<n; ++i)
+            *(new_map+i) = static_cast<T*>(::operator new(BLOCK_SIZE* sizeof(T)));
+
+        difference_type finish_offset = finish_.ptr_ - finish_.first_;
+        difference_type start_offset = start_.ptr_ - start_.first_;
+
+        // move the elements
+        try {
+            if(n > size_) {
+                for (int i = n-1; i >= n-size_; --i) {
+                    if (i == n-size_)
+                        std::uninitialized_move(finish_.first_, finish_.ptr_, *(new_map + i));
+                    else
+                        std::uninitialized_move(*(map_ + i), *(map_ + i) + BLOCK_SIZE, *(new_map + i));
+                }
+            }
+            else{ // if n is less than current size, destroy the extra elements
+                for(int i=0; i<n; ++i){
+                    std::uninitialized_move(*(map_+i), *(map_+i)+BLOCK_SIZE, *(new_map+n-1-i));
+                }
+                //destroy the extra elements
+                for(iterator i= begin(); i != *(map_+(size_-n)-1)+BLOCK_SIZE; ++i)
+                    std::destroy_at(i);
+            }
+
+        }catch (...){
+            // if move throws, deallocate these memory
+            for(int i=0; i<n; ++i)
+                ::operator delete(*(new_map+i));
+            ::operator delete(new_map);
+        }
+
+        //deallocates the old container
+        for(int i=0; i<size_; ++i)
+            ::operator delete(*(map_+i));
+        ::operator delete(map_);
+
+        //change the pointer to the new map;
+        map_ = new_map;
+        start_.set(new_map, start_offset);
+        finish_.set(new_map+n-1, finish_offset);
+
     }
 
 
