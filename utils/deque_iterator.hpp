@@ -123,12 +123,14 @@ namespace sc::utils{
             } else{
                 difference_type remain = ptr_ - first_;
 
-                difference_type blocknum = (-n)>remain? ceil((float)((-n)-remain)/BLOCK_SIZE) : 0;
+                if(n <= remain)
+                    return ptr_[n];
+                else{
+                    difference_type blocknum = ceil((-n-remain)/BLOCK_SIZE);
 
-                if(blocknum == 0)
-                    return *(ptr_-n) ;
-                else
-                    return *(*(block_-blocknum) + (BLOCK_SIZE - (n-remain)%BLOCK_SIZE));
+                    return *(block_+blocknum)+ BLOCK_SIZE - (-n-remain)%BLOCK_SIZE;
+                }
+
             }
         }
 
