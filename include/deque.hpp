@@ -204,11 +204,11 @@ namespace sc::regular{
         }
 
         // initialize start iterator
-        start_(map_, *map_);
+        start_.set(map_, *map_);
 
         //initialize finish iterator
         //start_ and finish_ points to the same element
-        finish_(map_, *map_);
+        finish_.set(map_, *map_);
 
     }
 
@@ -218,7 +218,7 @@ namespace sc::regular{
         size_type element_count = last - first;
 
         // call default construction
-        this->deque(element_count);
+        this->deque(element_count); //size_ uninitialized? remember to test
 
         // provide strong exception guarantee
         try {
@@ -243,6 +243,46 @@ namespace sc::regular{
 
     }
 
+    template<class T>
+    deque<T>::deque(const deque &other) {
+        // first call default constructor
+        deque(other.size_);
+
+        // provide strong exception guarantee
+        try {
+            for (int i=0; i<size_; ++i) {
+                if(i == size_-1){
+                    // copy the last block
+                    finish_.ptr_ = std::uninitialized_copy(*(other.map_)+i, other.finish_.ptr_, finish_.first_);
+                    assert(other.finish_.ptr_ - *(other.map_)-i == other.size_ % BLOCK_SIZE);
+                } else {
+                    // copy the entire block
+                    std::uninitialized_copy_n((*other.map_+i), BLOCK_SIZE, finish_.first_);
+                    finish_ += BLOCK_SIZE;
+                }
+            }
+        }catch (...){
+            // if throws, deallocates all allocated memory
+            for(int i=0; i<size_; ++i){
+                ::operator delete(*(map_+i));
+            }
+            ::operator delete(map_);
+        }
+
+    }
+
+    template<class T>
+    deque<T>::deque(deque &&other) noexcept {
+        map_ = other.map_;
+        other.map_ = nullptr;
+        start_ = other.start_;
+        other.start_ = nullptr;
+        finish_ = other.finish_;
+        other.finish_ = nullptr;
+        size_ = other.size_;
+        other.size_ = nullptr;
+    }
+
     // this function has no-throw guarantee because std::swap does not throw
     template <class T>
     void swap(deque<T> &q1, deque<T> &q2) {
@@ -260,6 +300,18 @@ namespace sc::regular{
 
         return *this;
     }
+
+    template<class T>
+    deque<T>::~deque() {
+        // first clear the data
+        clear();
+        // second deallocate the memory
+        for(int i=0; i<size_; ++i){
+            ::operator delete(*(map_+i));
+        }
+        ::operator delete(map_);
+    }
+
 
 }
 

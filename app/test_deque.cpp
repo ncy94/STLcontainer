@@ -11,6 +11,9 @@ void do_test(){
 
     // test default constructor;
     deque<T> t(15);
+
+    //test copy constructor
+    deque<T> t2(t);
 }
 
 int main(){
