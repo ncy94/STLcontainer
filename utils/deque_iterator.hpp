@@ -86,7 +86,7 @@ namespace sc::utils{
 
             // the number of blocks to be jumped
             difference_type blocknum = n>remain? ceil((float)(n-remain)/BLOCK_SIZE) : 0;
-            *block_ += blocknum;
+            block_ += blocknum;
             first_ = *block_;
             last_ = first_+BLOCK_SIZE;
             ptr_ = first_ + ((n-remain)%BLOCK_SIZE);
@@ -104,7 +104,7 @@ namespace sc::utils{
             if(blocknum == 0)
                 ptr_ -= n;
             else {
-                *block_ -= blocknum;
+                block_ -= blocknum;
                 first_ = *block_;
                 last_ = first_+BLOCK_SIZE;
                 ptr_ = last_ - ((n - remain) % BLOCK_SIZE);
@@ -112,6 +112,36 @@ namespace sc::utils{
 
             return *this;
         }
+
+        deque_iterator&operator[](difference_type n){
+            if(n>=0){
+                difference_type remain = last_ - ptr_ - 1;
+
+                difference_type blocknum = n>remain? ceil((float)(n-remain)/BLOCK_SIZE) : 0;
+
+                return *(*(block_+blocknum) + ((n-remain)%BLOCK_SIZE));
+            }
+        }
+
+        deque_iterator operator+(difference_type n){
+            deque_iterator tmp(*this);
+            tmp += n;
+            return tmp;
+        }
+
+        difference_type operator-(const deque_iterator& other){
+            return (ptr_-first_+1) + (other.last_-other.ptr_) + (block_-other.block_-1)*BLOCK_SIZE;
+        }
+
+        deque_iterator operator-(difference_type n){
+            deque_iterator tmp(*this);
+            tmp -= n;
+            return tmp;
+        }
+
+
+
+
 
 
     private:
