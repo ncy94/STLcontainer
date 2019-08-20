@@ -107,7 +107,7 @@ namespace sc::regular{
          */
 
         // checks whether this function is empty
-        bool empty() const { return size() == 0;}
+        bool empty() const { return start_.ptr_ == finish_.ptr_;}
 
         // returns the number of elements
         size_type size() const ;
@@ -432,6 +432,25 @@ namespace sc::regular{
     template<class T>
     typename deque<T>::const_ref deque<T>::back() const {
         return *(finish_.last_-1);
+    }
+
+    template<class T>
+    typename deque<T>::size_type deque<T>::size() const {
+        return(finish_-start_-1)*BLOCK_SIZE + (finish_.ptr_-finish_.first_+1) + (start_.last_-start_.ptr_);
+    }
+
+    template<class T>
+    typename deque<T>::size_type deque<T>::max_size() const {
+        return BLOCK_SIZE*size_;
+    }
+
+    template<class T>
+    void deque<T>::shrink_to_fit() {
+        deque other(begin(), end());
+
+        swap(*this, other);
+
+        return *this;
     }
 
 
