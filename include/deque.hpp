@@ -469,6 +469,11 @@ namespace sc::regular{
         for(int i=0; i<size_; ++i)
             ::operator delete(*(map_+i));
         ::operator delete(map_);
+
+        size_ = new_size;
+        map_ = new_map;
+        start_.set(*map_, start_offset);
+        finish_.set(*(map_+size_), finish_offset);
     }
 
     template<class T>
