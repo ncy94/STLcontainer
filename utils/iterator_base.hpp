@@ -32,10 +32,12 @@ namespace sc::utils{
         //default constructor
         iterator_base(): ptr_(nullptr) {}
 
+        //iterator_base(const iterator_base& other):ptr_(other.ptr_){}
+
         //forbids to copy a const iterator to a non-const iterator
-        template <class OtherT, class =
-                std::enable_if_t<std::is_convertible_v<OtherT*, T*>>>
-                iterator_base(const iterator_base<OtherT,Iterator>& other): ptr_(other.ptr_) {}
+        template <class OtherT, class OtherIter,
+                class = std::enable_if_t<std::is_convertible_v<OtherT*, T*>>>
+                iterator_base(const iterator_base<OtherT,OtherIter>& other): ptr_(other.ptr_) {}
 
         reference operator*() {return *ptr_;}
 
