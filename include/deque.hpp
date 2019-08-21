@@ -95,12 +95,12 @@ namespace sc::regular{
          */
 
         //returns an iterator to the begin of the elements
-        iterator being() {return start_;}
-        const_iterator begin() const {return start_;}
+        iterator begin() {return start_;}
+        const_iterator begin() const {return const_iterator(start_);}
 
         //returns an iterator to the end of the elements
         iterator end() {return finish_;}
-        const_iterator end() const { return finish_;}
+        const_iterator end() const { return const_iterator(finish_);}
 
         /*
          * Capacity

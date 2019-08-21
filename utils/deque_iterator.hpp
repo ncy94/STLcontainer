@@ -28,8 +28,11 @@ namespace sc::utils{
 
         deque_iterator():iterator_base<T,deque_iterator>(), first_(nullptr), last_(nullptr), block_(nullptr){}
 
+
         template <class OtherT, class = std::enable_if_t<std::is_convertible_v<OtherT*, T*>>>
-        deque_iterator(const deque_iterator<OtherT>& other):iterator_base<T,deque_iterator<T>>(other),first_(other.first_), last_(other.last_), block_(other.block_){}
+        deque_iterator(const deque_iterator<OtherT>& other):iterator_base<T,deque_iterator<T>>(other),first_(other.first_), last_(other.last_){
+            block_ = other.block_;
+        }
 
         //deque_iterator(const deque_iterator& other): iterator_base<T,deque_iterator>(other), first_(other.first_), last_(other.last_), block_(other.block_){}
 //        deque_iterator(deque_iterator&& other) noexcept {
@@ -227,7 +230,8 @@ namespace sc::utils{
         void previousblock();
         T* first_; // pointer to first element in block
         T* last_; // pointer to end element in block
-        T** block_; //pointer to current block
+        // cannot assign from int** to const int**
+        value_type ** block_; //pointer to current block
     };
 
     template <class T>
