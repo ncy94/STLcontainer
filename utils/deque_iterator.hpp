@@ -26,7 +26,7 @@ namespace sc::utils{
         using typename iterator_base<T, deque_iterator<T>>::pointer;
         using typename iterator_base<T, deque_iterator<T>>::reference;
 
-        deque_iterator():iterator_base<T,deque_iterator>(), first_(nullptr), last_(nullptr), block_(nullptr){}
+        deque_iterator(T* ptr= nullptr, T** block = nullptr):iterator_base<T,deque_iterator>(ptr), first_(*block), last_(*block), block_(block){}
 
 
         template <class OtherT, class = std::enable_if_t<std::is_convertible_v<OtherT*, T*>>>
