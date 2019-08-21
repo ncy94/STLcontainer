@@ -711,6 +711,59 @@ namespace sc::regular{
 
     }
 
+    template<class T>
+    void deque<T>::swap(deque &other) {
+        swap(*this, other);
+    }
+
+    //lexically compare two deque
+    template <class T>
+    bool operator==(const deque<T> &q1, const deque<T> &q2) {
+        if(q1.size() == q2.size()) {
+            for (auto iter1 = q1.begin(), iter2 = q2.begin(); q1 != q1.end(); ++q1) {
+                if(*q1 != *q2)
+                    return false;
+            }
+            return true;
+        }
+        return false;
+
+    }
+
+    template <class T>
+    bool operator!=(const deque<T> &q1, const deque<T> &q2) {
+        return !(q1 == q2);
+    }
+
+    template <class T>
+    bool operator>(const deque<T> &q1, const deque<T> &q2){
+        if(q1.size() == q2.size()){
+            for(auto iter1 = q1.begin(), iter2 = q2.begin(); q1 != q1.end(); ++q1){
+                if(*q1 == *q2)
+                    continue;
+                return *q1 > *q2;
+            }
+            return false; //q1 == q2
+        }
+
+        return q1.size() > q2.size();
+    }
+
+    template <class T>
+    bool operator<(const deque<T> &q1, const deque<T> &q2){
+        return q2 > q1;
+    }
+
+    template <class T>
+    bool operator>=(const deque<T> &q1, const deque<T> &q2){
+        return !(q1 < q2);
+    }
+
+    template <class T>
+    bool operator<=(const deque<T> &q1, const deque<T> &q2){
+        return !(q1 > q2);
+    }
+
 
 }
 
