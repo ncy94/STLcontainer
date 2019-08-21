@@ -272,7 +272,7 @@ namespace sc::regular{
             for (int i=0; i<size_; ++i) {
                 if(i == size_-1){
                     // copy the last block
-                    finish_.ptr_ = std::uninitialized_copy(*(other.map_)+i, other.finish_.ptr_, finish_.first_);
+                    finish_.ptr_ = std::uninitialized_copy(*(other.map_+i), other.finish_.ptr_, finish_.first_);
                     assert(other.finish_.ptr_ - *(other.map_)-i == other.size_ % BLOCK_SIZE);
                 } else {
                     // copy the entire block
@@ -636,7 +636,7 @@ namespace sc::regular{
         if(finish_.block_ == map_+size_-1 && finish_.ptr_ == finish_.last_-1)
             growrear(2 * BLOCK_SIZE * size_);
 
-        finish_.ptr_ = value;
+        *(finish_.ptr_) = value;
         ++finish_;
     }
 
@@ -645,7 +645,7 @@ namespace sc::regular{
         if(finish_.block_ == map_+size_-1 && finish_.ptr_ == finish_.last_-1)
             growrear(2 * BLOCK_SIZE * size_);
 
-        finish_.ptr_ = std::move(value);
+        *(finish_.ptr_) = std::move(value);
         ++finish_;
     }
 
