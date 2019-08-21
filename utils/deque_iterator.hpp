@@ -230,7 +230,9 @@ namespace sc::utils{
         void previousblock();
         T* first_; // pointer to first element in block
         T* last_; // pointer to end element in block
+
         // cannot assign from int** to const int**
+        // https://stackoverflow.com/questions/16390294/conversion-from-int-to-const-int
         value_type ** block_; //pointer to current block
     };
 
