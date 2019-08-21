@@ -21,23 +21,27 @@ namespace sc::utils{
 
     public:
         using iterator_base<T, deque_iterator<T>>::ptr_;
+        using typename iterator_base<T,deque_iterator<T>>::value_type ;
         using typename iterator_base<T, deque_iterator<T>>::difference_type ;
         using typename iterator_base<T, deque_iterator<T>>::pointer;
         using typename iterator_base<T, deque_iterator<T>>::reference;
 
         deque_iterator():iterator_base<T,deque_iterator>(), first_(nullptr), last_(nullptr), block_(nullptr){}
 
-        deque_iterator(const deque_iterator& other): iterator_base<T,deque_iterator>(other), first_(other.first_), last_(other.last_), block_(other.block_){}
-        deque_iterator(deque_iterator&& other) noexcept {
-            ptr_ = other.ptr_;
-            other.ptr_ = nullptr;
-            first_ = other.first_;
-            other.first_ = nullptr;
-            last_ = other.last_;
-            other.last_ = nullptr;
-            block_ = other.block_;
-            other.block_ = nullptr;
-        }
+        template <class OtherT, class = std::enable_if_t<std::is_convertible_v<OtherT*, T*>>>
+        deque_iterator(const deque_iterator<OtherT>& other):iterator_base<T,deque_iterator<T>>(other),first_(other.first_), last_(other.last_), block_(other.block_){}
+
+        //deque_iterator(const deque_iterator& other): iterator_base<T,deque_iterator>(other), first_(other.first_), last_(other.last_), block_(other.block_){}
+//        deque_iterator(deque_iterator&& other) noexcept {
+//            ptr_ = other.ptr_;
+//            other.ptr_ = nullptr;
+//            first_ = other.first_;
+//            other.first_ = nullptr;
+//            last_ = other.last_;
+//            other.last_ = nullptr;
+//            block_ = other.block_;
+//            other.block_ = nullptr;
+//        }
 
         // copy and move assignment
         deque_iterator operator=(deque_iterator other){
@@ -216,6 +220,7 @@ namespace sc::utils{
 
     private:
         template <class> friend class sc::regular::deque;
+        template <class> friend class deque_iterator;
         // move to the next block
         void nextblock();
         // move to the previous block
