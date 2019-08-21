@@ -30,7 +30,7 @@ namespace sc::utils{
         using difference_type = std::ptrdiff_t;
 
         //default constructor
-        iterator_base(): ptr_(nullptr) {}
+        iterator_base(T* ptr= nullptr): ptr_(ptr) {}
 
         //iterator_base(const iterator_base& other):ptr_(other.ptr_){}
 
