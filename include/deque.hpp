@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <cmath>
+#include <iostream>
 #include "deque_iterator.hpp"
 
 
@@ -263,22 +264,10 @@ namespace sc::regular{
             *(map_+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
         }
 
-        // inititialize start,finish iterator according to other
-        start_.set(map_ + (other.start_.block_-other.map_), other.start_.ptr_ - other.start_.first_);
-        finish_ = start_;
-
         // provide strong exception guarantee
         try {
             for (int i=0; i<size_; ++i) {
-                if(i == size_-1){
-                    // copy the last block
-                    finish_.ptr_ = std::uninitialized_copy(*(other.map_+i), other.finish_.ptr_, finish_.first_);
-                    assert(other.finish_.ptr_ - *(other.map_)-i == other.size_ % BLOCK_SIZE);
-                } else {
-                    // copy the entire block
-                    std::uninitialized_copy(*(other.map_+i), *(other.map_+i)+BLOCK_SIZE, finish_.first_);
-                    finish_ += BLOCK_SIZE;
-                }
+                std::uninitialized_copy(*(other.map_+i), *(other.map_+i)+BLOCK_SIZE, *(map_+i));
             }
         }catch (...){
             // if throws, deallocates all allocated memory
@@ -287,6 +276,8 @@ namespace sc::regular{
             }
             ::operator delete(map_);
         }
+        start_.set(map_ + (other.start_.block_-other.map_), other.start_.ptr_ - other.start_.first_);
+        finish_.set(map_ + (other.finish_.block_-other.map_), other.finish_.ptr_ - other.finish_.first_);
 
     }
 
@@ -354,8 +345,6 @@ namespace sc::regular{
                 ::operator delete(*(map_+i));
             ::operator delete(map_);
         }
-
-
     }
 
     template<class T>
@@ -435,7 +424,7 @@ namespace sc::regular{
 
     template<class T>
     typename deque<T>::size_type deque<T>::size() const {
-        return finish_-start_+1;
+        return finish_-start_;
     }
 
     template<class T>
@@ -471,10 +460,11 @@ namespace sc::regular{
             ::operator delete(*(map_+i));
         ::operator delete(map_);
 
-        size_ = new_size;
+
         map_ = new_map;
         start_.set(*map_, start_offset);
         finish_.set(*(map_+size_-1), finish_offset);
+        size_ = new_size;
     }
 
     template<class T>
@@ -516,7 +506,7 @@ namespace sc::regular{
                 }
                 //destroy the extra elements
                 for(iterator i = *(map_+new_size); i!=end(); ++i)
-                    std::destroy_at(i);
+                    std::destroy_at(i.ptr_);
             }
 
         }catch (...){
@@ -532,10 +522,11 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
-        size_ = new_size;
+
         map_ = new_map;
         start_.set(new_map, start_offset);
         finish_.set(new_map+size_-1, finish_offset);
+        size_ = new_size;
 
     }
 
@@ -588,10 +579,11 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
-        size_ = new_size;
+
         map_ = new_map;
         start_.set(new_map, start_offset);
-        finish_.set(new_map+new_size-1, finish_offset);
+        finish_.set(new_map+size_-1, finish_offset);
+        size_ = new_size;
 
     }
 

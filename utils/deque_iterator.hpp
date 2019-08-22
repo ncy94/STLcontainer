@@ -171,7 +171,7 @@ namespace sc::utils{
         }
 
         difference_type operator-(const deque_iterator& other) const{
-            return (ptr_-first_+1) + (other.last_-other.ptr_) + (block_-other.block_-1)*BLOCK_SIZE;
+            return (ptr_-first_) + (other.last_-other.ptr_) + (block_-other.block_-1)*BLOCK_SIZE;
         }
 
         deque_iterator operator-(difference_type n) const{
@@ -251,7 +251,7 @@ namespace sc::utils{
         assert(ptr_ == last_-1);
 
         // Incrementing the end block is undefined behaviour
-        ++(*block_);
+        ++block_;
         first_ = *block_;
         last_ = first_ + BLOCK_SIZE;
     }
@@ -261,7 +261,7 @@ namespace sc::utils{
         assert(ptr_ == first_);
 
         //decrementing the first block is undefined behaviour
-        --(*block_);
+        --block_;
         first_ = *block_;
         last_ = first_ + BLOCK_SIZE;
     }
