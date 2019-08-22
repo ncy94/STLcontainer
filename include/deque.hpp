@@ -446,7 +446,7 @@ namespace sc::regular{
     template<class T>
     void deque<T>::shrink_to_fit() {
         // allocates memory for new map
-        difference_type new_size = finish_-start_+1;
+        difference_type new_size = finish_.block_-start_.block_+1;
         T** new_map = static_cast<T**>(::operator new(new_size * sizeof(T*)));
         for(int i=0; i<new_size; ++i)
             *(new_map+i) = static_cast<T*>(::operator new(BLOCK_SIZE * sizeof(T)));
@@ -471,11 +471,11 @@ namespace sc::regular{
             ::operator delete(*(map_+i));
         ::operator delete(map_);
 
-
-        map_ = new_map;
-        start_.set(*map_, start_offset);
-        finish_.set(*(map_+size_-1), finish_offset);
         size_ = new_size;
+        map_ = new_map;
+        start_.set(map_, start_offset);
+        finish_.set((map_+size_-1), finish_offset);
+
     }
 
     template<class T>
@@ -483,6 +483,7 @@ namespace sc::regular{
         for(int i=0; i<size_; ++i)
             std::destroy_n(*(map_+i), BLOCK_SIZE);
         std::destroy_n(map_, size_);
+        finish_ = start_;
     }
 
     template<class T>
