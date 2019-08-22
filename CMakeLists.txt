@@ -27,3 +27,6 @@ target_link_libraries(test_list PUBLIC container_library)
 
 add_executable(test_deque app/test_deque.cpp)
 target_link_libraries(test_deque PUBLIC container_library)
+
+add_executable(test_unordered_set app/test_unordered_set.cpp)
+target_link_libraries(test_unordered_set PUBLIC container_library)
