@@ -14,6 +14,7 @@
  * references: http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html
  */
 
+#include "list_node.hpp"
 
 // forward declare friend classes
 namespace sc::regular{
