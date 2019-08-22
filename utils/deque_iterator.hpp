@@ -67,7 +67,6 @@ namespace sc::utils{
             // if it's at the end of current block, move to the next block
             if(ptr_ == last_-1){
                 nextblock();
-                ptr_ = *block_;
             }else{
                 ++ptr_;
             }
@@ -79,7 +78,6 @@ namespace sc::utils{
             // if it's at the end of current block, move to the next block
             if(ptr_ == last_-1){
                 nextblock();
-                ptr_ = *block_;
             }else{
                 ++ptr_;
             }
@@ -248,12 +246,13 @@ namespace sc::utils{
 
     template<class T>
     void deque_iterator<T>::nextblock() {
-        assert(ptr_ == last_-1);
+        //assert(ptr_ == last_-1);
 
         // Incrementing the end block is undefined behaviour
         ++block_;
         first_ = *block_;
         last_ = first_ + BLOCK_SIZE;
+        ptr_ = *block_;
     }
 
     template<class T>

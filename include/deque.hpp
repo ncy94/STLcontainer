@@ -234,17 +234,21 @@ namespace sc::regular{
 
         // provide strong exception guarantee
         try {
-            for (int i=0, iter=first; i<size_; ++i) {
-                if(i == size_-1){
-                    // copy the last block
-                    finish_.ptr_ = std::uninitialized_copy(iter, last, finish_.first_);
-                    assert(last - iter == element_count % BLOCK_SIZE);
-                } else {
-                    // copy the entire block
-                    std::uninitialized_copy(iter, iter + BLOCK_SIZE, finish_.first_);
-                    finish_ += BLOCK_SIZE;
-                }
+            for(auto iter=first; iter!=last; ++iter){
+                std::uninitialized_copy_n(iter,1,finish_.ptr_);
+                ++finish_;
             }
+//            for (int i=0, iter=first; i<size_; ++i) {
+//                if(i == size_-1){
+//                    // copy the last block
+//                    finish_.ptr_ = std::uninitialized_copy(iter, last, finish_.first_);
+//                    assert(last - iter == element_count % BLOCK_SIZE);
+//                } else {
+//                    // copy the entire block
+//                    std::uninitialized_copy(iter, iter + BLOCK_SIZE, finish_.first_);
+//                    finish_ += BLOCK_SIZE;
+//                }
+//            }
         }catch (...){
             // if throws, deallocates all allocated memory
             for(int i=0; i<size_; ++i){
@@ -287,8 +291,8 @@ namespace sc::regular{
         other.map_ = nullptr;
         start_ = std::move(other.start_);
         finish_ = std::move(other.finish_);
-        size_ = std::move(other.size_);
-
+        size_ = other.size_;
+        other.size_ = 0;
     }
 
     // this function has no-throw guarantee because std::swap does not throw
@@ -362,17 +366,24 @@ namespace sc::regular{
 
         // provide strong exception guarantee
         try {
-            for (int i=0, iter=first; i<size_; ++i) {
-                if(i == size_-1){
-                    // copy the last block
-                    finish_.ptr_ = std::uninitialized_copy(iter, last, finish_.first_);
-                    assert(last - iter == element_count % BLOCK_SIZE);
-                } else {
-                    // copy the entire block
-                    std::uninitialized_copy(iter, iter + BLOCK_SIZE, finish_.first_);
-                    finish_ += BLOCK_SIZE;
-                }
+            for(auto iter=first; iter!=last; ++iter){
+                std::uninitialized_copy_n(iter,1,finish_.ptr_);
+                ++finish_;
             }
+//            auto iter = first;
+//            for (int i=0; i<size_; ++i) {
+//                if(i == size_-1){
+//                    // copy the last block
+//                    std::uninitialized_copy(iter, last, finish_.first_);
+//                    finish_ += (last - iter);
+//                    //assert((last - iter)%BLOCK_SIZE == element_count % BLOCK_SIZE);
+//                } else {
+//                    // copy the entire block
+//                    std::uninitialized_copy(iter, iter + BLOCK_SIZE, finish_.first_);
+//                    finish_ += BLOCK_SIZE;
+//                    iter += BLOCK_SIZE;
+//                }
+//            }
         }catch (...){
             // if throws, deallocates all allocated memory
             for(int i=0; i<size_; ++i){
@@ -550,11 +561,8 @@ namespace sc::regular{
         // move the elements
         try {
             if(new_size > size_) {
-                for (int i = new_size-1; i >= new_size-size_; --i) {
-                    if (i == new_size-size_)
-                        std::uninitialized_move(finish_.first_, finish_.ptr_, *(new_map + i));
-                    else
-                        std::uninitialized_move(*(map_ + i), *(map_ + i) + BLOCK_SIZE, *(new_map + i));
+                for (int i = 1; i <= size_; ++i) {
+                    std::uninitialized_move(*(map_+size_-i), *(map_+size_-i) + BLOCK_SIZE, *(new_map+new_size-i));
                 }
             }
             else{ // if n is less than current size, destroy the extra elements
@@ -563,7 +571,7 @@ namespace sc::regular{
                 }
                 //destroy the extra elements
                 for(iterator i= begin(); i != *(map_+(size_-new_size)-1)+BLOCK_SIZE; ++i)
-                    std::destroy_at(i);
+                    std::destroy_at(i.ptr_);
             }
 
         }catch (...){
@@ -579,10 +587,9 @@ namespace sc::regular{
         ::operator delete(map_);
 
         //change the pointer to the new map;
-
         map_ = new_map;
-        start_.set(new_map, start_offset);
-        finish_.set(new_map+size_-1, finish_offset);
+        finish_.set(new_map+new_size-1, finish_offset);
+        start_.set(finish_.block_-size_+1, start_offset);
         size_ = new_size;
 
     }
@@ -656,7 +663,7 @@ namespace sc::regular{
             growfront(2 * BLOCK_SIZE * size_);
 
         --start_;
-        start_.ptr_ = value;
+        *(start_.ptr_) = value;
     }
 
     template<class T>
@@ -665,7 +672,7 @@ namespace sc::regular{
             growfront(2 * BLOCK_SIZE * size_);
 
         --start_;
-        start_.ptr_ = std::move(value);
+        *(start_.ptr_) = std::move(value);
     }
 
     template<class T>
