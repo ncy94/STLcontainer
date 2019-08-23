@@ -161,7 +161,7 @@ namespace sc::regular{
         iterator erase( const_iterator first, const_iterator last);
         size_type erase( const key_type& key);
 
-        void swap( unordered_set& ohter) noexcept ;
+        void swap( unordered_set& other) noexcept ;
 
         // unlinks the node that contains the element pointed to by position
         // and returns a node handle that owns it
@@ -305,6 +305,24 @@ namespace sc::regular{
         other.start_ = nullptr;
         end_ = other.end_;
         other.end_ = nullptr;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    void unordered_set<Key, Hash, KeyEqual>::swap(unordered_set &other) noexcept {
+        // by swapping the elements, the two containers are effectively swapped
+        std::swap(hash_, other.hash_);
+        std::swap(equal_, other.equal_);
+        std::swap(bsize_, other.bsize_);
+        std::swap(mlf_, other.mlf_);
+        std::swap(list_, other.swap());
+        std::swap(start_, other.start_);
+        std::swap(end_, other.end_);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    unordered_set<Key, Hash, KeyEqual>& unordered_set<Key, Hash, KeyEqual>::operator=(unordered_set other) {
+        swap(*this, other);
+        return *this;
     }
 
 
