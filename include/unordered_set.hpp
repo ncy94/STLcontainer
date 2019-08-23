@@ -611,7 +611,9 @@ namespace sc::regular{
             // if the pos node is the first node of bucket
             if(pos->val_ == start_[bindex].first_->val_){
                 start_[bindex].first_ = pos->next_;
-            }else if(pos->val_ == start_[bindex].last_->val_){
+            }
+            // if the pos node is the last node of bucket
+            else if(pos->val_ == start_[bindex].last_->val_){
                 start_[bindex].last_ = pos->prev_;
             }
 
@@ -647,6 +649,112 @@ namespace sc::regular{
         }
 
         return list_.erase(first, last);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::size_type
+    unordered_set<Key, Hash, KeyEqual>::erase(const key_type &key) {
+        size_type bindex = bucket(key);
+
+        // if the bucket is empty, the container doesn't have this key
+        if(bucket_size(bindex) == 0)
+            return 0;
+        // if the bucket size is 1, clear the bucket
+        if(bucket_size(bindex) == 1){
+            // erase the node from the list
+            list_.erase(start_[bindex].first_);
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+            --bsize_;
+        } else{
+            // if the pos node is the first node of bucket
+            if(key == start_[bindex].first_->val_){
+                start_[bindex].first_ = start_[bindex].first_->next_;
+                list_.erase(start_[bindex].first_->prev_);
+            }
+                // if the pos node is the last node of bucket
+            else if(key == start_[bindex].last_->val_){
+                start_[bindex].last_ = start_[bindex].last_->prev_;
+                list_.erase(start_[bindex].last_->next_);
+            }
+        }
+        return 1;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::node_type
+    unordered_set<Key, Hash, KeyEqual>::extract(unordered_set::const_iterator position) {
+        size_type bindex = bucket(position->val_);
+
+        node_type node = *position;
+        // extract the node
+        node.prev_->next_ = node.next_;
+        node.next_->prev_ = node.prev_;
+        --list_.size_;
+
+        if(bucket_size(bindex) == 1){
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+            --bsize_;
+        }else{
+            // if the pos node is the first node of bucket
+            if(position->val_ == start_[bindex].first_->val_){
+                start_[bindex].first_ = position->next_;
+            }
+                // if the pos node is the last node of bucket
+            else if(position->val_ == start_[bindex].last_->val_){
+                start_[bindex].last_ = position->prev_;
+            }
+
+        }
+        return node;
+
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::node_type
+    unordered_set<Key, Hash, KeyEqual>::extract(const Key& x) {
+        size_type bindex = bucket(x);
+
+        node_type node;
+        // if not found, return an empty node
+        if(bucket_size(bindex) == 0)
+            return node;
+
+        if(bucket_size(bindex) == 1){
+            node = start_[bindex].first_;
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+        } else{
+            // if the pos node is the first node of bucket
+            if(x == start_[bindex].first_->val_){
+                start_[bindex].first_ = start_[bindex].first_->next_;
+            }
+                // if the pos node is the last node of bucket
+            else if(x == start_[bindex].last_->val_){
+                start_[bindex].last_ = start_[bindex].last_->prev_;
+            }
+        }
+
+        return node;
+
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    template<class H2, class P2>
+    void unordered_set<Key, Hash, KeyEqual>::merge(unordered_set<Key, H2, P2> &source) {
+        for(auto element: source){
+            insert(element);
+        }
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    template<class H2, class P2>
+    void unordered_set<Key, Hash, KeyEqual>::merge(unordered_set<Key, H2, P2> &&source) {
+        unordered_set<Key, H2, P2> tmp = std::move(source);
+        for(auto element: tmp){
+            insert(element);
+        }
     }
 
 }
