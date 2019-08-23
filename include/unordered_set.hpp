@@ -371,7 +371,7 @@ namespace sc::regular{
     std::pair<typename unordered_set<Key, Hash, KeyEqual>::iterator, bool>
             unordered_set<Key, Hash, KeyEqual>::insert(const value_type &value) {
         if(size() == max_load_factor()* bucket_count()-1)
-            rehash(2 * bucket_count());
+            rehash(2 * max_bucket_count());
 
         auto hs = hash_(value);
         auto bindex = bucket(hs); //index of the bucket
@@ -402,7 +402,7 @@ namespace sc::regular{
     std::pair<typename unordered_set<Key, Hash, KeyEqual>::iterator, bool>
             unordered_set<Key, Hash, KeyEqual>::insert(value_type &&value) {
         if(size() == max_load_factor()* bucket_count()-1)
-            rehash(2 * bucket_count());
+            rehash(2 * max_bucket_count());
 
         auto hs = hash_(value);
         auto bindex = bucket(hs); //index of the bucket
@@ -434,7 +434,7 @@ namespace sc::regular{
     typename unordered_set<Key, Hash, KeyEqual>::iterator
     unordered_set<Key, Hash, KeyEqual>::insert(unordered_set::const_iterator hint, const value_type &value) {
         if(size() == max_load_factor()* bucket_count()-1)
-            rehash(2 * bucket_count());
+            rehash(2 * max_bucket_count());
 
         auto hs = hash_(value);
         auto bindex = bucket(hs); //index of the bucket
@@ -465,7 +465,7 @@ namespace sc::regular{
     typename unordered_set<Key, Hash, KeyEqual>::iterator
     unordered_set<Key, Hash, KeyEqual>::insert(unordered_set::const_iterator hint, value_type &&value) {
         if(size() == max_load_factor()* bucket_count()-1)
-            rehash(2 * bucket_count());
+            rehash(2 * max_bucket_count());
 
         auto hs = hash_(value);
         auto bindex = bucket(hs); //index of the bucket
@@ -510,7 +510,7 @@ namespace sc::regular{
 
         // if nh is not empty node handle, insert the node
         if(size() == max_load_factor()* bucket_count()-1)
-            rehash(2 * bucket_count());
+            rehash(2 * max_bucket_count());
 
         auto hs = hash_(nh.val_);
         auto bindex = bucket(hs); //index of the bucket
@@ -554,7 +554,7 @@ namespace sc::regular{
 
         // if nh is not empty node handle, insert the node
         if(size() == max_load_factor()* bucket_count()-1)
-            rehash(2 * bucket_count());
+            rehash(2 * max_bucket_count());
 
         auto hs = hash_(nh.val_);
         auto bindex = bucket(hs); //index of the bucket
