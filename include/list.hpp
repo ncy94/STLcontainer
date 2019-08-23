@@ -71,13 +71,13 @@ namespace sc::regular{
          * Element acess
          */
 
-        reference front() { return *(node_.next());}
+        reference front() { return node_.next()->val_;}
 
-        const_refernce front() const{ return *(node_.next());}
+        const_refernce front() const{ return node_.next()->val_;}
 
-        reference back() { return *(node_.prev());}
+        reference back() { return node_.prev().val_;}
 
-        const_refernce back() const{ return *(node_.prev());}
+        const_refernce back() const{ return node_.prev().val_;}
 
         /*
          * Iterators
