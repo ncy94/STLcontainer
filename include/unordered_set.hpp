@@ -757,6 +757,57 @@ namespace sc::regular{
         }
     }
 
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::size_type
+    unordered_set<Key, Hash, KeyEqual>::count(const Key &key) const {
+        return bucket_size(bucket(key));
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator
+    unordered_set<Key, Hash, KeyEqual>::find(const Key &key) {
+        size_type bindex = bucket(key);
+
+        for(auto li=begin(bindex); li!=end(bindex); ++li){
+            if(li->val_ == key)
+                return li;
+        }
+
+        return end();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::const_iterator
+    unordered_set<Key, Hash, KeyEqual>::find(const Key &key) const {
+        size_type bindex = bucket(key);
+
+        for(auto li=begin(bindex); li!=end(bindex); ++li){
+            if(li->val_ == key)
+                return li;
+        }
+
+        return end();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    bool unordered_set<Key, Hash, KeyEqual>::contains(const Key &key) const {
+        return count(key);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    std::pair<typename unordered_set<Key,Hash,KeyEqual>::iterator, typename unordered_set<Key,Hash,KeyEqual>::iterator>
+    unordered_set<Key, Hash, KeyEqual>::equal_range(const Key &key) {
+        auto iter = find(key);
+        return std::pair(key,key);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    std::pair<typename unordered_set<Key,Hash,KeyEqual>::const_iterator, typename unordered_set<Key,Hash,KeyEqual>::const_iterator>
+    unordered_set<Key, Hash, KeyEqual>::equal_range(const Key &key) const{
+        auto iter = find(key);
+        return std::pair(key,key);
+    }
+
 }
 
 #endif //STLCONTAINER_UNORDERED_SET_HPP
