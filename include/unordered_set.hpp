@@ -144,9 +144,8 @@ namespace sc::regular{
         void insert( InputIt first, InputIt last );
 
         // If nh is an empty node handle, does nothing.
-        // Otherwise, inserts the element owned by nh into the container ,
-        // if the container doesn't already contain an element with a key equivalent to nh.key()
-        // The behavior is undefined if nh is not empty
+        // Otherwise, inserts the element owned by nh into the container, if the container
+        // doesn't already contain an element with a key equivalent to nh.key()
         insert_return_type<iterator, node_type > insert(node_type&& nh);
 
         iterator insert(const_iterator hint, node_type&& nh);
@@ -377,7 +376,7 @@ namespace sc::regular{
         auto hs = hash_(value);
         auto bindex = hs % bucket_count(); //index of the bucket
         if(start_[bindex] != hs){
-            list_.insert(value);
+            list_.push_back(value);
             start_[bindex].hash_ = hs;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
@@ -388,7 +387,10 @@ namespace sc::regular{
                 if(equal_(*li, value))
                     return std::pair<unordered_set::iterator, bool>(li, false);
                 // element is not found in the bucket, insert the element at the end of list
-                list_.inserts(value);
+                list_.push_back(value);
+
+                // update the last pointer of the bucket
+                start_[bindex].last_ = list_.node_.prev_;
             }
         }
 
@@ -404,7 +406,7 @@ namespace sc::regular{
         auto hs = hash_(value);
         auto bindex = hash_(value) % bucket_count(); //index of the bucket
         if(start_[bindex] != hs){
-            list_.insert(std::move(value));
+            list_.push_back(std::move(value));
             start_[bindex].hash_ = hs;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
@@ -415,12 +417,170 @@ namespace sc::regular{
                 if(equal_(*li, value))
                     return std::pair<unordered_set::iterator, bool>(li, false);
                 // element is not found in the bucket, insert the element at the end of list
-                list_.insert(std::move(value));
+                list_.push_back(std::move(value));
+
+                // update the last pointer of the bucket
+                start_[bindex].last_ = list_.node_.prev_;
             }
         }
 
         return std::pair<unordered_set::iterator, bool>(list_.end(), true);
 
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator
+    unordered_set<Key, Hash, KeyEqual>::insert(unordered_set::const_iterator hint, const value_type &value) {
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * bucket_count());
+
+        auto hs = hash_(value);
+        auto bindex = hs % bucket_count(); //index of the bucket
+        if(start_[bindex] != hs){
+            list_.push_back(value);
+            start_[bindex].hash_ = hs;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(auto iter = hint; iter != hint-1; ++iter){
+                if(equal_(*iter, value))
+                    return std::pair<unordered_set::iterator, bool>(iter, false);
+                // element is not found in the bucket, insert the element at the end of list
+                list_.push_back(value);
+
+                // update the last pointer of the bucket
+                start_[bindex].last_ = list_.node_.prev_;
+            }
+        }
+
+        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator
+    unordered_set<Key, Hash, KeyEqual>::insert(unordered_set::const_iterator hint, value_type &&value) {
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * bucket_count());
+
+        auto hs = hash_(value);
+        auto bindex = hs % bucket_count(); //index of the bucket
+        if(start_[bindex] != hs){
+            list_.push_back(std::move(value));
+            start_[bindex].hash_ = hs;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(auto iter = hint; iter != hint-1; ++iter){
+                if(equal_(*iter, value))
+                    return std::pair<unordered_set::iterator, bool>(iter, false);
+                // element is not found in the bucket, insert the element at the end of list
+                list_.push_back(std::move(value));
+
+                // update the last pointer of the bucket
+                start_[bindex].last_ = list_.node_.prev_;
+            }
+        }
+
+        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    template<class InputIt>
+    void unordered_set<Key, Hash, KeyEqual>::insert(InputIt first, InputIt last) {
+        for(auto iter = first; iter != last; ++iter)
+            insert(*iter);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::template insert_return_type<
+            typename unordered_set<Key, Hash, KeyEqual>::iterator,
+            typename unordered_set<Key, Hash, KeyEqual>::node_type>
+    unordered_set<Key, Hash, KeyEqual>::insert(unordered_set::node_type &&nh) {
+        // if nh is empty node handle, return false and the end iterator
+        if(nh.next_ == nullptr && nh.prev_ == nullptr)
+            return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(end(), nh);
+
+        // if nh is not empty node handle, insert the node
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * bucket_count());
+
+        auto hs = hash_(nh.val_);
+        auto bindex = hs % bucket_count(); //index of the bucket
+        if(start_[bindex] != hs){
+            // add the node to the end of list
+            list_.node_.prev_->next_ = &nh;
+            nh.prev_ = &(list_.node_.prev_);
+            list_.node_.prev_ = &nh;
+            nh.next_ = &(list_.node_);
+
+            start_[bindex].hash_ = hs;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(local_iterator li = begin(index); li != end(index); ++li){
+                if(equal_(*li, nh.val_))
+                    return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(li, nh);
+                // element is not found in the bucket, insert the element at the end of list
+                list_.node_.prev_->next_ = &nh;
+                nh.prev_ = &(list_.node_.prev_);
+                list_.node_.prev_ = &nh;
+                nh.next_ = &(list_.node_);
+
+                // update the last pointer of the bucket
+                start_[bindex].last_ = list_.node_.prev_;
+            }
+        }
+
+        return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(end(),nh);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator
+    unordered_set<Key, Hash, KeyEqual>::insert(const_iterator hint, unordered_set::node_type &&nh) {
+        // if nh is empty node handle, return false and the end iterator
+        if(nh.next_ == nullptr && nh.prev_ == nullptr)
+            return end();
+
+        // if nh is not empty node handle, insert the node
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * bucket_count());
+
+        auto hs = hash_(nh.val_);
+        auto bindex = hs % bucket_count(); //index of the bucket
+        if(start_[bindex] != hs){
+            // add the node to the end of list
+            list_.node_.prev_->next_ = &nh;
+            nh.prev_ = &(list_.node_.prev_);
+            list_.node_.prev_ = &nh;
+            nh.next_ = &(list_.node_);
+
+            start_[bindex].hash_ = hs;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(auto iter = hint; iter != hint-1; ++iter){
+                if(equal_(*iter, nh.val_))
+                    return iter;
+                // element is not found in the bucket, insert the element at the end of list
+                list_.node_.prev_->next_ = &nh;
+                nh.prev_ = &(list_.node_.prev_);
+                list_.node_.prev_ = &nh;
+                nh.next_ = &(list_.node_);
+
+                // update the last pointer of the bucket
+                start_[bindex].last_ = list_.node_.prev_;
+            }
+        }
+
+        return end();
     }
 
 
