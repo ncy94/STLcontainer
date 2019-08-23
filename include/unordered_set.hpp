@@ -381,21 +381,19 @@ namespace sc::regular{
             ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
+            return std::pair<unordered_set::iterator, bool>(list_.end(), true);
         }else{
             // handle collsion
             // go throw the elements in the bucket, use local iterator
-            for(local_iterator li = begin(index); li != end(index); ++li){
-                if(equal_(*li, value))
+            for(local_iterator li = begin(index); li != end(index); ++li) {
+                if (equal_(*li, value))
                     return std::pair<unordered_set::iterator, bool>(li, false);
-                // element is not found in the bucket, insert the element at the end of list
-                list_.push_back(value);
-
-                // update the last pointer of the bucket
-                start_[bindex].last_ = list_.node_.prev_;
             }
+                // element is not found in the bucket, insert the element at the end of bucket
+                list_.insert(start_[bindex].last_, value);
         }
 
-        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+        return std::pair<unordered_set::iterator, bool>(start_[bindex].last_, true);
     }
 
     template<class Key, class Hash, class KeyEqual>
@@ -412,21 +410,20 @@ namespace sc::regular{
             ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
+            return std::pair<unordered_set::iterator, bool>(list_.end(), true);
         }else{
             // handle collsion
             // go throw the elements in the bucket, use local iterator
-            for(local_iterator li = begin(index); li != end(index); ++li){
-                if(equal_(*li, value))
+            for(local_iterator li = begin(index); li != end(index); ++li) {
+                if (equal_(*li, value))
                     return std::pair<unordered_set::iterator, bool>(li, false);
-                // element is not found in the bucket, insert the element at the end of list
-                list_.push_back(std::move(value));
-
-                // update the last pointer of the bucket
-                start_[bindex].last_ = list_.node_.prev_;
             }
+                // element is not found in the bucket, insert the element at the end of list
+            list_.insert(start_[bindex].last_, std::move(value));
+
         }
 
-        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+        return std::pair<unordered_set::iterator, bool>(start_[bindex].last_, true);
 
     }
 
@@ -444,21 +441,20 @@ namespace sc::regular{
             ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
+            return std::pair<unordered_set::iterator, bool>(list_.end(), true);
         }else{
             // handle collsion
             // go throw the elements in the bucket, use local iterator
-            for(auto iter = hint; iter != hint-1; ++iter){
-                if(equal_(*iter, value))
+            for(auto iter = hint; iter != hint-1; ++iter) {
+                if (equal_(*iter, value))
                     return std::pair<unordered_set::iterator, bool>(iter, false);
-                // element is not found in the bucket, insert the element at the end of list
-                list_.push_back(value);
-
-                // update the last pointer of the bucket
-                start_[bindex].last_ = list_.node_.prev_;
             }
+                // element is not found in the bucket, insert the element at the end of list
+                list_.insert(start_[bindex], value);
+
         }
 
-        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+        return std::pair<unordered_set::iterator, bool>(start_[bindex].last_, true);
     }
 
     template<class Key, class Hash, class KeyEqual>
@@ -475,21 +471,20 @@ namespace sc::regular{
             ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
+            return std::pair<unordered_set::iterator, bool>(list_.end(), true);
         }else{
             // handle collsion
             // go throw the elements in the bucket, use local iterator
-            for(auto iter = hint; iter != hint-1; ++iter){
-                if(equal_(*iter, value))
+            for(auto iter = hint; iter != hint-1; ++iter) {
+                if (equal_(*iter, value))
                     return std::pair<unordered_set::iterator, bool>(iter, false);
-                // element is not found in the bucket, insert the element at the end of list
-                list_.push_back(std::move(value));
-
-                // update the last pointer of the bucket
-                start_[bindex].last_ = list_.node_.prev_;
             }
+                // element is not found in the bucket, insert the element at the end of list
+                list_.insert(start_[bindex], std::move(value));
+
         }
 
-        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+        return std::pair<unordered_set::iterator, bool>(start_[bindex].last_, true);
     }
 
     template<class Key, class Hash, class KeyEqual>
@@ -525,24 +520,23 @@ namespace sc::regular{
             ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
+            return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(end(), nh);
         }else{
             // handle collsion
             // go throw the elements in the bucket, use local iterator
-            for(local_iterator li = begin(index); li != end(index); ++li){
-                if(equal_(*li, nh.val_))
+            for(local_iterator li = begin(index); li != end(index); ++li) {
+                if (equal_(*li, nh.val_))
                     return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(li, nh);
-                // element is not found in the bucket, insert the element at the end of list
-                list_.node_.prev_->next_ = &nh;
-                nh.prev_ = &(list_.node_.prev_);
-                list_.node_.prev_ = &nh;
-                nh.next_ = &(list_.node_);
-
-                // update the last pointer of the bucket
-                start_[bindex].last_ = list_.node_.prev_;
             }
+                // element is not found in the bucket, insert the element at the end of bucket
+                start_[bindex].last_->prev_->next_ = &nh;
+                nh.prev_ = &(start_[bindex].last_->prev_);
+                start_[bindex].last_->prev_ = &nh;
+                nh.next_ = &(start_[bindex].last_);
+
         }
 
-        return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(end(),nh);
+        return unordered_set::insert_return_type<unordered_set::iterator, unordered_set::node_type>(start_[bindex].last_,nh);
     }
 
     template<class Key, class Hash, class KeyEqual>
@@ -569,24 +563,23 @@ namespace sc::regular{
             ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
+            return end();
         }else{
             // handle collsion
             // go throw the elements in the bucket, use local iterator
-            for(auto iter = hint; iter != hint-1; ++iter){
-                if(equal_(*iter, nh.val_))
+            for(auto iter = hint; iter != hint-1; ++iter) {
+                if (equal_(*iter, nh.val_))
                     return iter;
-                // element is not found in the bucket, insert the element at the end of list
-                list_.node_.prev_->next_ = &nh;
-                nh.prev_ = &(list_.node_.prev_);
-                list_.node_.prev_ = &nh;
-                nh.next_ = &(list_.node_);
-
-                // update the last pointer of the bucket
-                start_[bindex].last_ = list_.node_.prev_;
             }
-        }
+                // element is not found in the bucket, insert the element at the end of bucket
+                start_[bindex].last_->prev_->next_ = &nh;
+                nh.prev_ = &(start_[bindex].last_->prev_);
+                start_[bindex].last_->prev_ = &nh;
+                nh.next_ = &(start_[bindex].last_);
 
-        return end();
+            }
+
+        return start_[bindex].last_;
     }
 
     template<class Key, class Hash, class KeyEqual>
