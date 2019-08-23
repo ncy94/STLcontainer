@@ -250,11 +250,65 @@ namespace sc::regular{
         // the bi-directional linked list that hold the Keys
         list<Key> list_;
 
-        // the number of buckets
+        // the number of buckets that has elements
         size_type bsize_;
         // the maximum load factor
         float mlf_;
+
+        Hash hash_;
+        KeyEqual equal_;
     };
+
+    template<class Key, class Hash, class KeyEqual>
+    unordered_set<Key, Hash, KeyEqual>::unordered_set(
+            unordered_set::size_type bucket_count,
+            const Hash &hash,const key_equal &equal) : hash_(hash), equal_(equal), bsize_(0), mlf_(0.f), list_(bucket_count)
+            {
+                start_ = static_cast<bucket_type *>(::operator new(bucket_count * sizeof(bucket_type)));
+                end_ = start_ + bucket_count* sizeof(bucket_type);
+
+    }
+
+    // copy constructor
+    template<class Key, class Hash, class KeyEqual>
+    unordered_set<Key, Hash, KeyEqual>::unordered_set(const unordered_set &other):
+        hash_(other.hash_),
+        equal_(other.equal_),
+        bsize_(other.bsize_),
+        mlf_(other.mlf_),
+        list_(other.list_)
+    {
+        start_ = static_cast<bucket_type *>(::operator new(other.end_-other.start_));
+        end_ = start_ + (other.end_-other.start_);
+
+        try {
+            std::uninitialized_copy(other.start_, other.end_, start_);
+        }catch (...){
+            ::operator delete(start_);
+        }
+
+    }
+
+    // move constructor
+    template<class Key, class Hash, class KeyEqual>
+    unordered_set<Key, Hash, KeyEqual>::unordered_set(unordered_set &&other){
+        hash_ = std::move(other.hash_);
+        equal_ = std::move(other.equal_);
+        bsize_ = other.bsize_;
+        other.bsize_ = 0;
+        mlf_ = other.mlf_;
+        other.mlf_ = 0;
+        list_ = other.list_;
+
+        // move the bucket block
+        start_ = other.start_;
+        other.start_ = nullptr;
+        end_ = other.end_;
+        other.end_ = nullptr;
+    }
+
+
+
 
 
 }
