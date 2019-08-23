@@ -327,8 +327,7 @@ namespace sc::regular{
 
     template<class Key, class Hash, class KeyEqual>
     unordered_set<Key, Hash, KeyEqual>::~unordered_set() {
-        ~list_;
-        std::destroy(start_, end_);
+        clear();
         ::operator delete(start_);
     }
 
@@ -360,6 +359,68 @@ namespace sc::regular{
     template<class Key, class Hash, class KeyEqual>
     typename unordered_set<Key, Hash, KeyEqual>::const_iterator unordered_set<Key, Hash, KeyEqual>::cend()const noexcept{
         return list_.end();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    void unordered_set<Key, Hash, KeyEqual>::clear() noexcept {
+        list_.clear();
+        std::destroy(start_, end_);
+        bsize_ = 0;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    std::pair<typename unordered_set<Key, Hash, KeyEqual>::iterator, bool>
+            unordered_set<Key, Hash, KeyEqual>::insert(const value_type &value) {
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * bucket_count());
+
+        auto hs = hash_(value);
+        auto bindex = hs % bucket_count(); //index of the bucket
+        if(start_[bindex] != hs){
+            list_.insert(value);
+            start_[bindex].hash_ = hs;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(local_iterator li = begin(index); li != end(index); ++li){
+                if(equal_(*li, value))
+                    return std::pair<unordered_set::iterator, bool>(li, false);
+                // element is not found in the bucket, insert the element at the end of list
+                list_.inserts(value);
+            }
+        }
+
+        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    std::pair<typename unordered_set<Key, Hash, KeyEqual>::iterator, bool>
+            unordered_set<Key, Hash, KeyEqual>::insert(value_type &&value) {
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * bucket_count());
+
+        auto hs = hash_(value);
+        auto bindex = hash_(value) % bucket_count(); //index of the bucket
+        if(start_[bindex] != hs){
+            list_.insert(std::move(value));
+            start_[bindex].hash_ = hs;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(local_iterator li = begin(index); li != end(index); ++li){
+                if(equal_(*li, value))
+                    return std::pair<unordered_set::iterator, bool>(li, false);
+                // element is not found in the bucket, insert the element at the end of list
+                list_.insert(std::move(value));
+            }
+        }
+
+        return std::pair<unordered_set::iterator, bool>(list_.end(), true);
+
     }
 
 
