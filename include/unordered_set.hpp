@@ -83,7 +83,7 @@ namespace sc::regular{
 
         // copy/move constructor
         unordered_set( const unordered_set& other);
-        unordered_set( unordered_set&& other);
+        unordered_set( unordered_set&& other) noexcept ;
 
         // copy/move assignment operator
         unordered_set&operator=(unordered_set other);
@@ -291,7 +291,7 @@ namespace sc::regular{
 
     // move constructor
     template<class Key, class Hash, class KeyEqual>
-    unordered_set<Key, Hash, KeyEqual>::unordered_set(unordered_set &&other){
+    unordered_set<Key, Hash, KeyEqual>::unordered_set(unordered_set &&other) noexcept {
         hash_ = std::move(other.hash_);
         equal_ = std::move(other.equal_);
         bsize_ = other.bsize_;
@@ -325,8 +325,42 @@ namespace sc::regular{
         return *this;
     }
 
+    template<class Key, class Hash, class KeyEqual>
+    unordered_set<Key, Hash, KeyEqual>::~unordered_set() {
+        ~list_;
+        std::destroy(start_, end_);
+        ::operator delete(start_);
+    }
 
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator unordered_set<Key, Hash, KeyEqual>::begin() noexcept {
+        return list_.begin();
+    }
 
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::const_iterator unordered_set<Key, Hash, KeyEqual>::begin()const noexcept{
+        return list_.begin();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::const_iterator unordered_set<Key, Hash, KeyEqual>::cbegin()const noexcept{
+        return list_.begin();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator unordered_set<Key, Hash, KeyEqual>::end() noexcept {
+        return list_.end();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::const_iterator unordered_set<Key, Hash, KeyEqual>::end()const noexcept{
+        return list_.end();
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::const_iterator unordered_set<Key, Hash, KeyEqual>::cend()const noexcept{
+        return list_.end();
+    }
 
 
 }
