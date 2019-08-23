@@ -374,10 +374,11 @@ namespace sc::regular{
             rehash(2 * bucket_count());
 
         auto hs = hash_(value);
-        auto bindex = hs % bucket_count(); //index of the bucket
+        auto bindex = bucket(hs); //index of the bucket
         if(start_[bindex] != hs){
             list_.push_back(value);
             start_[bindex].hash_ = hs;
+            ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
         }else{
@@ -404,10 +405,11 @@ namespace sc::regular{
             rehash(2 * bucket_count());
 
         auto hs = hash_(value);
-        auto bindex = hash_(value) % bucket_count(); //index of the bucket
+        auto bindex = bucket(hs); //index of the bucket
         if(start_[bindex] != hs){
             list_.push_back(std::move(value));
             start_[bindex].hash_ = hs;
+            ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
         }else{
@@ -435,10 +437,11 @@ namespace sc::regular{
             rehash(2 * bucket_count());
 
         auto hs = hash_(value);
-        auto bindex = hs % bucket_count(); //index of the bucket
+        auto bindex = bucket(hs); //index of the bucket
         if(start_[bindex] != hs){
             list_.push_back(value);
             start_[bindex].hash_ = hs;
+            ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
         }else{
@@ -465,10 +468,11 @@ namespace sc::regular{
             rehash(2 * bucket_count());
 
         auto hs = hash_(value);
-        auto bindex = hs % bucket_count(); //index of the bucket
+        auto bindex = bucket(hs); //index of the bucket
         if(start_[bindex] != hs){
             list_.push_back(std::move(value));
             start_[bindex].hash_ = hs;
+            ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
         }else{
@@ -509,7 +513,7 @@ namespace sc::regular{
             rehash(2 * bucket_count());
 
         auto hs = hash_(nh.val_);
-        auto bindex = hs % bucket_count(); //index of the bucket
+        auto bindex = bucket(hs); //index of the bucket
         if(start_[bindex] != hs){
             // add the node to the end of list
             list_.node_.prev_->next_ = &nh;
@@ -518,6 +522,7 @@ namespace sc::regular{
             nh.next_ = &(list_.node_);
 
             start_[bindex].hash_ = hs;
+            ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
         }else{
@@ -552,7 +557,7 @@ namespace sc::regular{
             rehash(2 * bucket_count());
 
         auto hs = hash_(nh.val_);
-        auto bindex = hs % bucket_count(); //index of the bucket
+        auto bindex = bucket(hs); //index of the bucket
         if(start_[bindex] != hs){
             // add the node to the end of list
             list_.node_.prev_->next_ = &nh;
@@ -561,6 +566,7 @@ namespace sc::regular{
             nh.next_ = &(list_.node_);
 
             start_[bindex].hash_ = hs;
+            ++bsize_;
             start_[bindex].first_ = list_.node_.prev_;
             start_[bindex].last_ = list_.node_.prev_;
         }else{
@@ -583,6 +589,20 @@ namespace sc::regular{
         return end();
     }
 
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::size_type
+    unordered_set<Key, Hash, KeyEqual>::bucket_size(unordered_set::size_type n) const {
+        size_type s = 0;
+        for(auto li=begin(n); li!=end(n); ++li)
+            ++s;
+        return s;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::size_type
+    unordered_set<Key, Hash, KeyEqual>::bucket(const Key &key) const {
+        return hash_(key) % max_bucket_count();
+    }
 
 }
 
