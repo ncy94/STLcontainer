@@ -107,9 +107,9 @@ namespace sc::regular{
         /*
          * Capacity
          */
-        bool empty() const{ return ksize_ == 0;}
+        bool empty() const{ return list_.size() == 0;}
 
-        size_type size() const{ return ksize_;}
+        size_type size() const{ return list_.size();}
 
         size_type max_size() const { return std::numeric_limits<diffrence_type >::max();}
 
@@ -247,8 +247,9 @@ namespace sc::regular{
         bucket_type* start_;
         // the end position of the bucket array
         bucket_type* end_;
-        // the number of keys
-        size_type ksize_;
+        // the bi-directional linked list that hold the Keys
+        list<Key> list_;
+
         // the number of buckets
         size_type bsize_;
         // the maximum load factor
