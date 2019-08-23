@@ -9,6 +9,7 @@
 
 namespace sc::regular{
     template <class> class list;
+    template <class,class,class> class unordered_set;
 }
 
 namespace sc::utils{
@@ -40,6 +41,7 @@ namespace sc::utils{
         node_base(T val): val_(val), next_(nullptr){}
 
     private:
+        template <class,class,class> friend class sc::regular::unordered_set;
         template <class> friend class sc::regular::list;
         T val_;
 

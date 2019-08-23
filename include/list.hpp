@@ -213,6 +213,7 @@ namespace sc::regular{
         //friend std::swap(list& l1, list& l2);
 
     private:
+        template <class,class,class> friend class unordered_set;
         list_node<T> node_; // sentinel node
         size_type size_;
     };

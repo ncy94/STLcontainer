@@ -34,6 +34,7 @@ namespace sc::utils{
 
 
      private:
+         template <class, class, class> friend class sc::regular::unordered_set;
          template <class> friend class sc::regular::list;
 
          list_node* prev_;
