@@ -604,6 +604,28 @@ namespace sc::regular{
         return hash_(key) % max_bucket_count();
     }
 
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::iterator
+    unordered_set<Key, Hash, KeyEqual>::erase(unordered_set::const_iterator pos) {
+        size_type bindex = bucket(pos->val_);
+
+        // if the bucket size is 1, clear the bucket
+        if(bucket_size(bindex) == 1){
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+            --bsize_;
+        } else{
+            // if the pos node is the first node of bucket
+            if(pos->val_ == start_[bindex].first_->val_){
+                start_[bindex].first_ = pos->next_;
+            }else if(pos->val_ == start_[bindex].last_->val_){
+                start_[bindex].last_ = pos->prev_;
+            }
+
+        }
+        return list_.erase(pos);
+    }
+
 }
 
 #endif //STLCONTAINER_UNORDERED_SET_HPP
