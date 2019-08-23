@@ -26,6 +26,8 @@ namespace sc::utils{
 
     template <class T>
     class bucket{
+    public:
+        bucket(unsigned long hash): hash_(hash), first_(nullptr), last_(nullptr){}
     private:
         template <class> friend class sc::regular::list;
         sc::utils::list_node<T>* first_;
