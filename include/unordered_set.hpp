@@ -798,14 +798,81 @@ namespace sc::regular{
     std::pair<typename unordered_set<Key,Hash,KeyEqual>::iterator, typename unordered_set<Key,Hash,KeyEqual>::iterator>
     unordered_set<Key, Hash, KeyEqual>::equal_range(const Key &key) {
         auto iter = find(key);
-        return std::pair(key,key);
+        return std::pair(key,key+1);
     }
 
     template<class Key, class Hash, class KeyEqual>
     std::pair<typename unordered_set<Key,Hash,KeyEqual>::const_iterator, typename unordered_set<Key,Hash,KeyEqual>::const_iterator>
     unordered_set<Key, Hash, KeyEqual>::equal_range(const Key &key) const{
         auto iter = find(key);
-        return std::pair(key,key);
+        return std::pair(key,key+1);
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::local_iterator
+    unordered_set<Key, Hash, KeyEqual>::begin(unordered_set::size_type n) {
+        return start_[n].first_;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::local_iterator
+    unordered_set<Key, Hash, KeyEqual>::begin(unordered_set::size_type n) const{
+        return start_[n].first_;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::local_iterator
+    unordered_set<Key, Hash, KeyEqual>::cbegin(unordered_set::size_type n) const{
+        return start_[n].first_;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::local_iterator
+    unordered_set<Key, Hash, KeyEqual>::end(unordered_set::size_type n) {
+        return start_[n].last_+1;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::local_iterator
+    unordered_set<Key, Hash, KeyEqual>::end(unordered_set::size_type n) const{
+        return start_[n].last_+1;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    typename unordered_set<Key, Hash, KeyEqual>::local_iterator
+    unordered_set<Key, Hash, KeyEqual>::cend(unordered_set::size_type n) const{
+        return start_[n].last_+1;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    void unordered_set<Key, Hash, KeyEqual>::rehash(unordered_set::size_type count) {
+        auto new_start = static_cast<key_type *>(::operator new(count));
+        auto old_count = bucket_count();
+
+        try {
+            std::uninitialized_move(start_, end_, new_start);
+        }catch (...){
+            ::operator delete(new_start);
+        }
+
+        start_ = new_start;
+        end_ = start_ + 2 * old_count;
+
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    void unordered_set<Key, Hash, KeyEqual>::reserve(unordered_set::size_type count) {
+        rehash(ceil(count / max_load_factor()));
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    bool operator==(const unordered_set<Key, Hash, KeyEqual> &lhs, const unordered_set<Key, Hash, KeyEqual> &rhs) {
+        return rhs.list_ == lhs.list_;
+    }
+
+    template<class Key, class Hash, class KeyEqual>
+    bool operator!=(const unordered_set<Key, Hash, KeyEqual> &lhs, const unordered_set<Key, Hash, KeyEqual> &rhs) {
+        return *(lhs == rhs);
     }
 
 }
