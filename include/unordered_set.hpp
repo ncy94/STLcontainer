@@ -609,11 +609,11 @@ namespace sc::regular{
             --bsize_;
         } else{
             // if the pos node is the first node of bucket
-            if(pos->val_ == start_[bindex].first_->val_){
+            if(equal_(pos->val_, start_[bindex].first_->val_)){
                 start_[bindex].first_ = pos->next_;
             }
             // if the pos node is the last node of bucket
-            else if(pos->val_ == start_[bindex].last_->val_){
+            else if(equal_(pos->val_, start_[bindex].last_->val_)){
                 start_[bindex].last_ = pos->prev_;
             }
 
@@ -636,13 +636,13 @@ namespace sc::regular{
             }
 
             // first element is the end of bucket
-            if(iter == first && start_[bindex].last_ == &(*iter)){
+            if(iter == first && equal_(start_[bindex].last_, &(*iter))){
                 start_[bindex].last_ = start_[bindex].last_->prev_;
                 continue ;
             }
 
             // last element is the start of bucket
-            if(iter == last-1 && start_[bindex].first_ == &(*iter)){
+            if(iter == last-1 && equal_(start_[bindex].first_, &(*iter))){
                 start_[bindex].first_ = start_[bindex].first_->next_;
                 continue;
             }
@@ -668,12 +668,12 @@ namespace sc::regular{
             --bsize_;
         } else{
             // if the pos node is the first node of bucket
-            if(key == start_[bindex].first_->val_){
+            if(equal_(key, start_[bindex].first_->val_)){
                 start_[bindex].first_ = start_[bindex].first_->next_;
                 list_.erase(start_[bindex].first_->prev_);
             }
                 // if the pos node is the last node of bucket
-            else if(key == start_[bindex].last_->val_){
+            else if(equal_(key,start_[bindex].last_->val_)){
                 start_[bindex].last_ = start_[bindex].last_->prev_;
                 list_.erase(start_[bindex].last_->next_);
             }
@@ -698,11 +698,11 @@ namespace sc::regular{
             --bsize_;
         }else{
             // if the pos node is the first node of bucket
-            if(position->val_ == start_[bindex].first_->val_){
+            if(equal_(position->val_,start_[bindex].first_->val_)){
                 start_[bindex].first_ = position->next_;
             }
                 // if the pos node is the last node of bucket
-            else if(position->val_ == start_[bindex].last_->val_){
+            else if(equal_(position->val_,start_[bindex].last_->val_)){
                 start_[bindex].last_ = position->prev_;
             }
 
@@ -727,11 +727,11 @@ namespace sc::regular{
             start_[bindex].last_ = nullptr;
         } else{
             // if the pos node is the first node of bucket
-            if(x == start_[bindex].first_->val_){
+            if(equal_(x,start_[bindex].first_->val_)){
                 start_[bindex].first_ = start_[bindex].first_->next_;
             }
                 // if the pos node is the last node of bucket
-            else if(x == start_[bindex].last_->val_){
+            else if(equal_(x,start_[bindex].last_->val_)){
                 start_[bindex].last_ = start_[bindex].last_->prev_;
             }
         }
