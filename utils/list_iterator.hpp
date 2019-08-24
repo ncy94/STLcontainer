@@ -20,6 +20,8 @@ namespace sc::utils{
         using typename iterator_base<T, list_iterator<T>>::pointer;
         using typename iterator_base<T, list_iterator<T>>::reference;
 
+        list_iterator(pointer ptr): iterator_base<T, list_iterator<T>>(ptr){}
+
         list_iterator& operator++(){
             ptr_ = ptr_->next_;
             return *this;

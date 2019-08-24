@@ -19,7 +19,7 @@ namespace sc::utils{
     class node_base{
     public:
 
-        node_base(): val_(0), next_(nullptr){}
+        node_base(T val): val_(val), next_(nullptr){}
 
         node_base(const node_base& other): val_(other.val_), next_(other.next_) {}
         node_base(node_base&& other): val_(std::move(other.val_)), next_(std::move(other.next_)){ }
@@ -38,7 +38,7 @@ namespace sc::utils{
             return *this;
         }
 
-        node_base(T val): val_(val), next_(nullptr){}
+        //node_base(T val): val_(val), next_(nullptr){}
 
     private:
         template <class,class,class> friend class sc::regular::unordered_set;

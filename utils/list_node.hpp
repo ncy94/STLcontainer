@@ -14,7 +14,7 @@ namespace sc::utils{
      class list_node: public node_base<T, list_node<T>>{
      public:
 
-         list_node(): node_base<T,list_node<T>>(), prev_(nullptr){}
+         list_node(T val): node_base<T,list_node<T>>(val), prev_(nullptr){}
          list_node(const list_node& other): node_base<T,list_node<T>>(other), prev_(other.prev_) {}
          list_node(list_node&& other) noexcept : node_base<T,list_node<T>>(std::move(other)), prev_(std::move(other.prev_)) {}
 
