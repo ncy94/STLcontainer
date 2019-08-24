@@ -32,9 +32,9 @@ namespace sc::regular{
 
         using const_pointer = const T*;
 
-        using iterator = sc::utils::list_iterator<T>;
+        using iterator = sc::utils::list_iterator<list_node<T>>;
 
-        using const_iterator = sc::utils::list_iterator<T const>;
+        using const_iterator = sc::utils::list_iterator<list_node<T> const>;
 
 
         /*
@@ -42,7 +42,7 @@ namespace sc::regular{
          */
 
         //default constructor
-        list(): node_(), size_(0) {
+        list(): node_(0), size_(0) {
             node_.next_ = &node_;
             node_.prev_ = &node_;
         }
@@ -246,11 +246,11 @@ namespace sc::regular{
     }
 
     template<class T>
-    list<T>::list(const list &other): node_(), size_(0) {
+    list<T>::list(const list &other): node_(other.node_), size_(0) {
         list_node<T>* des = &node_;
-        list_node<T>* src = &(other.node_);
+        const list_node<T>* src = &(other.node_);
         while(size_ < other.size()){
-            des->next_ = new list_node(src->val_);
+            des->next_ = new list_node<T>(src->val_);
             des->next_->prev_ = des;
 
             //proceed both nodes
@@ -260,7 +260,7 @@ namespace sc::regular{
         }
         des->next_ = &node_;
         // src should points to the sentinel node at this time
-        assert(src->next_ == other.end());
+        assert(src->next_ == &(other.node_));
     }
 
     template<class T>
