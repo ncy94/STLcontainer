@@ -83,19 +83,19 @@ namespace sc::regular{
          * Iterators
          */
 
-        iterator begin() { return iterator(node_.next());}
+        iterator begin() { return iterator(node_.next_);}
 
-        const_iterator begin() const{ return const_iterator(node_.next());}
+        const_iterator begin() const{ return const_iterator(node_.next_);}
 
-        const_iterator cbegin() const{ return const_iterator(node_.next());}
+        const_iterator cbegin() const{ return const_iterator(node_.next_);}
 
         //end returns the iterator points to the one-past-the-end element
 
-        iterator end() { return iterator(node_);}
+        iterator end() { return iterator(&node_);}
 
-        const_iterator end() const{ return const_iterator(node_);}
+        const_iterator end() const{ return const_iterator(&node_);}
 
-        const_iterator cend() const{ return const_iterator(node_);}
+        const_iterator cend() const{ return const_iterator(&node_);}
 
         /*
          * Capacity
@@ -219,16 +219,16 @@ namespace sc::regular{
     };
 
     template <class T>
-    list<T>::list(list::size_type count, const value_type &value):node_(), size_(0) {
+    list<T>::list(list::size_type count, const value_type &value):node_(0), size_(0) {
         list_node<T>* tmp = &node_;
         while(size_ < count){
             tmp->next_ = new list_node(value);
-            tmp->next->prev_ = tmp;
+            tmp->next_->prev_ = tmp;
             tmp = tmp->next_;
             size_ += 1;
         }
         tmp->next_ = &node_;
-
+        node_.prev_ = tmp;
     }
 
     template<class T>
@@ -242,7 +242,7 @@ namespace sc::regular{
             size_ += 1;
         }
         tmp->next_ = &node_;
-
+        node_.prev_ = tmp;
     }
 
     template<class T>
@@ -266,7 +266,7 @@ namespace sc::regular{
     template<class T>
     list<T>::list(list &&other) noexcept {
         node_ = std::move(other.node_);
-        size_ = other.size();
+        size_ = other.size_;
         other.size_ = 0;
     }
 
@@ -342,9 +342,7 @@ namespace sc::regular{
         // delete from tail to head
         list_node<T>* tmp = node_.prev_;
         while(size_ > 0){
-            tmp = tmp->prev_;
-            delete(tmp->next_);
-            --size_;
+            pop_back();
         }
 
         assert(size_ == 0 && node_.prev_==node_.next_);
@@ -447,6 +445,8 @@ namespace sc::regular{
         // delete the node at pos
         delete pos;
 
+        --size_;
+
         return iterator(proc->next_);
 
 
@@ -464,6 +464,8 @@ namespace sc::regular{
 
         proc->next_ = &(*last);
         last->prev_ = proc;
+
+        --size_;
 
         return iterator(last);
     }
@@ -494,6 +496,8 @@ namespace sc::regular{
         old_last->next_->next_ = &node_;
         node_.prev_ = old_last->next_;
 
+        ++size_;
+
     }
 
     template<class T>
@@ -503,8 +507,9 @@ namespace sc::regular{
             return;
 
         list_node<T>* old_last = node_.prev_;
-        old_last->prev_->next_ = &node_;
         node_.prev_ = old_last->prev_;
+        old_last->prev_->next_ = &node_;
+
 
         delete old_last;
         --size_;
