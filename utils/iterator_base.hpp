@@ -10,6 +10,7 @@
 //forward declaration
 namespace sc::regular{
     template <class> class deque;
+    template <class> class list;
 }
 
 namespace sc::utils{
@@ -48,18 +49,19 @@ namespace sc::utils{
         virtual Iterator operator++(int) = 0;
 
         template <class OtherT, class OtherIter>
-        bool operator==(const iterator_base<OtherT, OtherIter> other) const {
+        bool operator==(const iterator_base<OtherT, OtherIter>& other) const {
             return ptr_ == other.ptr_;
         }
 
         template <class OtherT, class OtherIter>
-        bool operator!=(const iterator_base<OtherT, OtherIter> other) const {
+        bool operator!=(const iterator_base<OtherT, OtherIter>& other) const {
             return ptr_ != other.ptr_;
         }
 
 
     protected:
         template <class> friend class sc::regular::deque;
+        template <class> friend class sc::regular::list;
         template <class> friend class list_iterator;
         template <class> friend class array_iterator;
         template <class,class> friend class iterator_base;

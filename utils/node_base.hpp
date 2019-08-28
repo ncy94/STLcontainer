@@ -38,11 +38,12 @@ namespace sc::utils{
             return *this;
         }
 
-        //node_base(T val): val_(val), next_(nullptr){}
+        T getValue() const {return val_;}
 
     private:
         template <class,class,class> friend class sc::regular::unordered_set;
         template <class> friend class sc::regular::list;
+        template <class> friend class list_iterator;
         T val_;
 
         Node* next_;

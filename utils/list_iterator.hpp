@@ -44,6 +44,9 @@ namespace sc::utils{
             return old;
         }
 
+    //private:
+    //    template <class> friend class sc::regular::list;
+
     };
 }
 
