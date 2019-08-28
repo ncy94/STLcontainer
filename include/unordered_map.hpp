@@ -266,6 +266,80 @@ namespace sc::regular{
         KeyEqual equal_;
     };
 
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    unordered_map<Key, T, Hash, KeyEqual>::unordered_map(
+            unordered_map::size_type bucket_count,
+            const Hash &hash,const key_equal &equal) : hash_(hash), equal_(equal), bsize_(0), mlf_(0.f), list_(bucket_count)
+    {
+        start_ = static_cast<bucket_type *>(::operator new(bucket_count * sizeof(bucket_type)));
+        end_ = start_ + bucket_count* sizeof(bucket_type);
+
+    }
+
+    // copy constructor
+    template<class Key, class T, class Hash, class KeyEqual>
+    unordered_map<Key, T, Hash, KeyEqual>::unordered_map(const unordered_map &other):
+            hash_(other.hash_),
+            equal_(other.equal_),
+            bsize_(other.bsize_),
+            mlf_(other.mlf_),
+            list_(other.list_)
+    {
+        start_ = static_cast<bucket_type *>(::operator new(other.end_-other.start_));
+        end_ = start_ + (other.end_-other.start_);
+
+        try {
+            std::uninitialized_copy(other.start_, other.end_, start_);
+        }catch (...){
+            ::operator delete(start_);
+        }
+
+    }
+
+    // move constructor
+    template<class Key, class T, class Hash, class KeyEqual>
+    unordered_map<Key, T, Hash, KeyEqual>::unordered_map(unordered_map &&other) noexcept {
+        hash_ = std::move(other.hash_);
+        equal_ = std::move(other.equal_);
+        bsize_ = other.bsize_;
+        other.bsize_ = 0;
+        mlf_ = other.mlf_;
+        other.mlf_ = 0;
+        list_ = other.list_;
+
+        // move the bucket block
+        start_ = other.start_;
+        other.start_ = nullptr;
+        end_ = other.end_;
+        other.end_ = nullptr;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    void unordered_map<Key, T, Hash, KeyEqual>::unordered_map::swap(unordered_map &other) noexcept {
+        // by swapping the elements, the two containers are effectively swapped
+        std::swap(hash_, other.hash_);
+        std::swap(equal_, other.equal_);
+        std::swap(bsize_, other.bsize_);
+        std::swap(mlf_, other.mlf_);
+        std::swap(list_, other.swap());
+        std::swap(start_, other.start_);
+        std::swap(end_, other.end_);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    unordered_map<Key, T, Hash, KeyEqual>& unordered_map<Key, T, Hash, KeyEqual>::operator=(unordered_map other) {
+        swap(*this, other);
+        return *this;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    unordered_map<Key, T, Hash, KeyEqual>::~unordered_map() {
+        clear();
+        ::operator delete(start_);
+    }
+
+
 }
 
 #endif //STLCONTAINER_UNORDERED_MAP_HPP
