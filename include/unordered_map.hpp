@@ -74,14 +74,12 @@ namespace sc::regular{
             NodeTye node;
         };
 
-        unordered_map() : unordered_map( size_type(0)){}
         explicit unordered_map (size_type bucket_count,
                                 const Hash& hash = Hash(),
                                 const key_equal& equal = key_equal());
 
         template <class InputIt>
-        unordered_map( InputIt first, InputIt last, size_type bucket_count, const Hash& hash)
-                :unordered_map(first, last, bucket_count, hash, key_equal()){}
+        unordered_map( InputIt first, InputIt last, size_type bucket_count, const Hash& hash);
 
         // copy/move constructor
         unordered_map( const unordered_map& other);
@@ -430,6 +428,59 @@ namespace sc::regular{
         return hash_(key) % max_bucket_count();
     }
 
+    /*
+     * Rehash and Reserve
+     */
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    void unordered_map<Key, T, Hash, KeyEqual>::rehash(unordered_map::size_type count) {
+        auto new_start = static_cast<key_type *>(::operator new(count));
+        auto old_count = bucket_count();
+
+        try {
+            std::uninitialized_move(start_, end_, new_start);
+        }catch (...){
+            ::operator delete(new_start);
+        }
+
+        start_ = new_start;
+        end_ = start_ + 2 * old_count;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    void unordered_map<Key, T, Hash, KeyEqual>::reserve(unordered_map::size_type count){
+        rehash(ceil(count / max_load_factor()));
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    std::pair<typename unordered_map<Key, T, Hash, KeyEqual>::iterator, bool>
+    unordered_map<Key, T, Hash, KeyEqual>::insert(const unordered_map::value_type &value) {
+        if(size() == max_load_factor()* bucket_count()-1)
+            rehash(2 * max_bucket_count());
+
+        auto hs = hash_(value.first);
+        auto bindex = bucket(value); //index of the bucket
+        if(bucket_count(bindex) == 0){
+            list_.push_back(value);
+            start_[bindex].hash_ = hs;
+            ++bsize_;
+            start_[bindex].first_ = list_.node_.prev_;
+            start_[bindex].last_ = list_.node_.prev_;
+            return std::pair<unordered_map::iterator, bool>(list_.end(), true);
+        }else{
+            // handle collsion
+            // go throw the elements in the bucket, use local iterator
+            for(local_iterator li = begin(index); li != end(index); ++li) {
+                // if the key equals
+                if (equal_((*li).first, value.first))
+                    return std::pair<unordered_map::iterator, bool>(li, false);
+            }
+            // element is not found in the bucket, insert the element at the end of bucket
+            list_.insert(start_[bindex].last_, value);
+        }
+
+        return std::pair<unordered_map::iterator, bool>(start_[bindex].last_, true);
+    }
 
 }
 
