@@ -356,17 +356,17 @@ namespace sc::regular{
 
     template<class Key, class T, class Hash, class KeyEqual>
     typename unordered_map<Key, T, Hash, KeyEqual>::iterator unordered_map<Key, T, Hash, KeyEqual>::end() noexcept {
-        return list_.begin();
+        return list_.end();
     }
 
     template<class Key, class T, class Hash, class KeyEqual>
     typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator unordered_map<Key, T, Hash, KeyEqual>::end() const noexcept{
-        return list_.begin();
+        return list_.end();
     }
 
     template<class Key, class T, class Hash, class KeyEqual>
     typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator unordered_map<Key, T, Hash, KeyEqual>::cend() const noexcept{
-        return list_.begin();
+        return list_.end();
     }
 
     template<class Key, class T, class Hash, class KeyEqual>
@@ -374,6 +374,45 @@ namespace sc::regular{
         list_.clear();
         std::destroy(start_, end_);
         bsize_ = 0;
+    }
+
+    /*
+     * Bucket interface
+     */
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::local_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::begin(unordered_map::size_type n) {
+        return start_[n].first_;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_local_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::begin(unordered_map::size_type n) const{
+        return start_[n].first_;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_local_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::cbegin(unordered_map::size_type n) const{
+        return start_[n].first_;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::local_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::end(unordered_map::size_type n) {
+        return start_[n].last_+1;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_local_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::end(unordered_map::size_type n) const{
+        return start_[n].last_+1;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_local_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::cend(unordered_map::size_type n) const{
+        return start_[n].last_+1;
     }
 
 
