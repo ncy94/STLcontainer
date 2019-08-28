@@ -62,10 +62,12 @@ namespace sc::utils{
     protected:
         template <class> friend class sc::regular::deque;
         template <class> friend class sc::regular::list;
-        template <class> friend class list_iterator;
-        template <class> friend class array_iterator;
-        template <class,class> friend class iterator_base;
-        template <class> friend class deque_iterator;
+        //template <class> friend class list_iterator;
+        //template <class> friend class array_iterator;
+        //template <class,class> friend class iterator_base;
+        //template <class> friend class deque_iterator;
+
+    protected:
         pointer ptr_;
 
     };

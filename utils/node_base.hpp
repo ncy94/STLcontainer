@@ -44,6 +44,8 @@ namespace sc::utils{
         template <class,class,class> friend class sc::regular::unordered_set;
         template <class> friend class sc::regular::list;
         template <class> friend class list_iterator;
+
+    protected:
         T val_;
 
         Node* next_;

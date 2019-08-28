@@ -30,6 +30,8 @@ namespace sc::utils{
         bucket(unsigned long hash): hash_(hash), first_(nullptr), last_(nullptr){}
     private:
         template <class> friend class sc::regular::list;
+
+    protected:
         sc::utils::list_node<T>* first_;
         sc::utils::list_node<T>* last_;
         unsigned long hash_;

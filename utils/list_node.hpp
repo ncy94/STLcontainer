@@ -38,6 +38,7 @@ namespace sc::utils{
          template <class> friend class sc::regular::list;
          template <class> friend class list_iterator;
 
+     protected:
          list_node* prev_;
 
      };
