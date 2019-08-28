@@ -339,6 +339,43 @@ namespace sc::regular{
         ::operator delete(start_);
     }
 
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::iterator unordered_map<Key, T, Hash, KeyEqual>::begin() noexcept {
+        return list_.begin();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator unordered_map<Key, T, Hash, KeyEqual>::begin() const noexcept{
+        return list_.begin();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator unordered_map<Key, T, Hash, KeyEqual>::cbegin() const noexcept{
+        return list_.begin();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::iterator unordered_map<Key, T, Hash, KeyEqual>::end() noexcept {
+        return list_.begin();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator unordered_map<Key, T, Hash, KeyEqual>::end() const noexcept{
+        return list_.begin();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator unordered_map<Key, T, Hash, KeyEqual>::cend() const noexcept{
+        return list_.begin();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    void unordered_map<Key, T, Hash, KeyEqual>::clear() noexcept {
+        list_.clear();
+        std::destroy(start_, end_);
+        bsize_ = 0;
+    }
+
 
 }
 
