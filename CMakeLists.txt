@@ -30,3 +30,6 @@ target_link_libraries(test_deque PUBLIC container_library)
 
 add_executable(test_unordered_set app/test_unordered_set.cpp)
 target_link_libraries(test_unordered_set PUBLIC container_library)
+
+add_executable(test_unordered_map app/test_unordered_map.cpp)
+target_link_libraries(test_unordered_map PUBLIC container_library)
