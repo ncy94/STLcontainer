@@ -415,6 +415,21 @@ namespace sc::regular{
         return start_[n].last_+1;
     }
 
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::size_type
+    unordered_map<Key, T, Hash, KeyEqual>::bucket_size(unordered_map::size_type n) const {
+        size_type s = 0;
+        for(auto li=begin(n); li!=end(n); ++li)
+            ++s;
+        return s;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::size_type
+    unordered_map<Key, T, Hash, KeyEqual>::bucket(const Key &key) const {
+        return hash_(key) % max_bucket_count();
+    }
+
 
 }
 
