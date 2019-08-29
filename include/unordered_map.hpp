@@ -662,10 +662,96 @@ namespace sc::regular{
             nh.next_ = &(start_[bindex].last_);
 
         }
-
         return start_[bindex].last_;
+    }
 
+    /*
+     * Erase functions
+     */
 
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::iterator
+    unordered_map<Key, T, Hash, KeyEqual>::erase(unordered_map::const_iterator pos) {
+        size_type bindex = bucket(pos->val_.first);
+
+        // if the bucket size is 1, clear the bucket
+        if(bucket_size(bindex) == 1){
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+            --bsize_;
+        } else{
+            // if the pos node is the first node of bucket
+            if(equal_(pos->val_.first, start_[bindex].first_->val_.first)){
+                start_[bindex].first_ = pos->next_;
+            }
+                // if the pos node is the last node of bucket
+            else if(equal_(pos->val_.first, start_[bindex].last_->val_.first)){
+                start_[bindex].last_ = pos->prev_;
+            }
+
+        }
+        return list_.erase(pos);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::iterator
+    unordered_map<Key, T, Hash, KeyEqual>::erase(unordered_map::const_iterator first,
+            unordered_map::const_iterator last) {
+        for(auto iter=first; iter!=last; ++iter){
+            auto bindex = bucket(iter->val_.first);
+
+            // if the element only has one element
+            if(bucket_size(bindex) == 1){
+                start_[bindex].first_ = nullptr;
+                start_[bindex].last_ = nullptr;
+                --bsize_;
+                continue;
+            }
+
+            // first element is the end of bucket
+            if(iter == first && start_[bindex].last_ == &(*iter)){
+                start_[bindex].last_ = start_[bindex].last_->prev_;
+                continue ;
+            }
+
+            // last element is the start of bucket
+            if(iter == last-1 && start_[bindex].first_ == &(*iter)){
+                start_[bindex].first_ = start_[bindex].first_->next_;
+                continue;
+            }
+        }
+
+        return list_.erase(first, last);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::size_type
+    unordered_map<Key, T, Hash, KeyEqual>::erase(const key_type &key) {
+        size_type bindex = bucket(key);
+
+        // if the bucket is empty, the container doesn't have this key
+        if(bucket_size(bindex) == 0)
+            return 0;
+        // if the bucket size is 1, clear the bucket
+        if(bucket_size(bindex) == 1){
+            // erase the node from the list
+            list_.erase(start_[bindex].first_);
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+            --bsize_;
+        } else{
+            // if the pos node is the first node of bucket
+            if(equal_(key, start_[bindex].first_->val_)){
+                start_[bindex].first_ = start_[bindex].first_->next_;
+                list_.erase(start_[bindex].first_->prev_);
+            }
+                // if the pos node is the last node of bucket
+            else if(equal_(key,start_[bindex].last_->val_)){
+                start_[bindex].last_ = start_[bindex].last_->prev_;
+                list_.erase(start_[bindex].last_->next_);
+            }
+        }
+        return 1;
     }
 
 
