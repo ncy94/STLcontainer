@@ -169,10 +169,10 @@ namespace sc::regular{
         node_type extract( const key_type& x);
 
         template <class H2, class P2>
-        void merge(unordered_map<Key, H2, P2>& source);
+        void merge(unordered_map<Key, T, H2, P2>& source);
 
         template <class H2, class P2>
-        void merge(unordered_map<Key, H2, P2>&& source);
+        void merge(unordered_map<Key, T, H2, P2>&& source);
 
         /*
          * Look-up
@@ -812,6 +812,119 @@ namespace sc::regular{
         }
 
         return node;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    template<class H2, class P2>
+    void unordered_map<Key, T, Hash, KeyEqual>::merge(unordered_map<Key, T, H2, P2> &source) {
+        for(auto element: source){
+            auto node = source.extract(element);
+            insert(node);
+        }
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    template<class H2, class P2>
+    void unordered_map<Key, T, Hash, KeyEqual>::merge(unordered_map<Key, T, H2, P2> &&source) {
+        for(auto element: std::move(source)){
+            auto node = source.extract(element);
+            insert(node);
+        }
+    }
+
+    /*
+     * Look-up functions
+     */
+    template<class Key, class T, class Hash, class KeyEqual>
+    T &unordered_map<Key, T, Hash, KeyEqual>::at(const Key &key) {
+        size_type bindex = bucket(key);
+        for(auto li = begin(bindex); li != end(bindex); ++li){
+            if(key == li->getValue().first)
+                return li->getValue().second;
+        }
+
+        // if no such element
+        throw std::out_of_range("key doesn't exist");
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    const T &unordered_map<Key, T, Hash, KeyEqual>::at(const Key &key) const {
+        size_type bindex = bucket(key);
+        for(auto li = begin(bindex); li != end(bindex); ++li){
+            if(key == li->getValue().first)
+                return li->getValue().second;
+        }
+
+        // if no such element
+        throw std::out_of_range("key doesn't exist");
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    T &unordered_map<Key, T, Hash, KeyEqual>::operator[](const Key &key){
+        return at(key);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    T &unordered_map<Key, T, Hash, KeyEqual>::operator[](Key &&key) {
+        return at(key);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::size_type
+    unordered_map<Key, T, Hash, KeyEqual>::count(const Key &key) const {
+        size_type bindex = bucket(key);
+        for(auto li=begin(bindex); li !=end(bindex); ++li){
+            if(equal_(li->getValue().first) == key)
+                return 1;
+        }
+        return 0;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::iterator
+    unordered_map<Key, T, Hash, KeyEqual>::find(const Key &key) {
+        size_type bindex = bucket(key);
+
+        for(auto li=begin(bindex); li!=end(bindex); ++li){
+            if(li->getValue().first == key)
+                return li;
+        }
+
+        return end();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator
+    unordered_map<Key, T, Hash, KeyEqual>::find(const Key &key) const{
+        size_type bindex = bucket(key);
+
+        for(auto li=begin(bindex); li!=end(bindex); ++li){
+            if(li->getValue().first == key)
+                return li;
+        }
+
+        return end();
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    bool unordered_map<Key, T, Hash, KeyEqual>::contains(const Key &key) const {
+        return count(key);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename std::pair<typename unordered_map<Key, T, Hash, KeyEqual>::iterator,
+    typename unordered_map<Key, T, Hash, KeyEqual>::iterator>
+    unordered_map<Key, T, Hash, KeyEqual>::equal_range(const Key &key) {
+        auto iter = find(key);
+        return std::pair(key,key+1);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename std::pair<typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator,
+            typename unordered_map<Key, T, Hash, KeyEqual>::const_iterator>
+    unordered_map<Key, T, Hash, KeyEqual>::equal_range(const Key &key) const{
+        auto iter = find(key);
+        return std::pair(key,key+1);
     }
 
 
