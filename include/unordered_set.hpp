@@ -636,13 +636,13 @@ namespace sc::regular{
             }
 
             // first element is the end of bucket
-            if(iter == first && equal_(start_[bindex].last_, &(*iter))){
+            if(iter == first && start_[bindex].last_ == &(*iter)){
                 start_[bindex].last_ = start_[bindex].last_->prev_;
                 continue ;
             }
 
             // last element is the start of bucket
-            if(iter == last-1 && equal_(start_[bindex].first_, &(*iter))){
+            if(iter == last-1 && start_[bindex].first_ == &(*iter)){
                 start_[bindex].first_ = start_[bindex].first_->next_;
                 continue;
             }
