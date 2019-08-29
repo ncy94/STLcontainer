@@ -927,6 +927,22 @@ namespace sc::regular{
         return std::pair(key,key+1);
     }
 
+    template<class Key, class T, class Hash, class KeyEqual>
+    bool operator==(const unordered_map<Key, T, Hash, KeyEqual> &lhs,
+            const unordered_map<Key, T, Hash, KeyEqual> &rhs) {
+        return (lhs.list_ == rhs.list_) &&
+                (lhs.hash_ == rhs.hash_) &&
+                (lhs.key_eq == rhs.key_eq);
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    bool operator!=(const unordered_map<Key, T, Hash, KeyEqual> &lhs,
+                    const unordered_map<Key, T, Hash, KeyEqual> &rhs) {
+        return !(lhs == rhs);
+    }
+
+
+
 
 }
 
