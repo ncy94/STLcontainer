@@ -665,6 +665,14 @@ namespace sc::regular{
         return start_[bindex].last_;
     }
 
+    template<class Key, class T, class Hash, class KeyEqual>
+    template<class InputIt>
+    void unordered_map<Key, T, Hash, KeyEqual>::insert(InputIt first, InputIt last) {
+        for(auto iter=first; iter!=last; ++iter){
+            insert(iter);
+        }
+    }
+
     /*
      * Erase functions
      */
@@ -940,9 +948,6 @@ namespace sc::regular{
                     const unordered_map<Key, T, Hash, KeyEqual> &rhs) {
         return !(lhs == rhs);
     }
-
-
-
 
 }
 
