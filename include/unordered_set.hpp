@@ -760,7 +760,12 @@ namespace sc::regular{
     template<class Key, class Hash, class KeyEqual>
     typename unordered_set<Key, Hash, KeyEqual>::size_type
     unordered_set<Key, Hash, KeyEqual>::count(const Key &key) const {
-        return bucket_size(bucket(key));
+        size_type bindex = bucket(key);
+        for(auto li=begin(bindex); li!=end(bindex); ++li){
+            if(li->getValue() == key)
+                return 1;
+        }
+        return 0;
     }
 
     template<class Key, class Hash, class KeyEqual>
