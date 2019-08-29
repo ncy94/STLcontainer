@@ -754,6 +754,66 @@ namespace sc::regular{
         return 1;
     }
 
+    /*
+     * Extract fucntions
+     */
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::node_type
+    unordered_map<Key, T, Hash, KeyEqual>::extract(unordered_map::const_iterator position) {
+        size_type bindex = bucket(position->val_.first);
+
+        node_type node = *position; // memory leak?
+        // extract the node
+        node.prev_->next_ = node.next_;
+        node.next_->prev_ = node.prev_;
+        --list_.size_;
+
+        if(bucket_size(bindex) == 1){
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+            --bsize_;
+        }else{
+            // if the pos node is the first node of bucket
+            if(equal_(position->val_.first,start_[bindex].first_->val_.first)){
+                start_[bindex].first_ = position->next_;
+            }
+                // if the pos node is the last node of bucket
+            else if(equal_(position->val_.first,start_[bindex].last_->val_.first)){
+                start_[bindex].last_ = position->prev_;
+            }
+        }
+        return node;
+    }
+
+    template<class Key, class T, class Hash, class KeyEqual>
+    typename unordered_map<Key, T, Hash, KeyEqual>::node_type
+    unordered_map<Key, T, Hash, KeyEqual>::extract(const key_type &x) {
+        size_type bindex = bucket(x);
+
+        node_type node;
+        // if not found, return an empty node
+        if(bucket_size(bindex) == 0)
+            return node;
+
+        if(bucket_size(bindex) == 1){
+            node = start_[bindex].first_;
+            start_[bindex].first_ = nullptr;
+            start_[bindex].last_ = nullptr;
+        } else{
+            // if the pos node is the first node of bucket
+            if(equal_(x,start_[bindex].first_->val_.first)){
+                start_[bindex].first_ = start_[bindex].first_->next_;
+            }
+                // if the pos node is the last node of bucket
+            else if(equal_(x,start_[bindex].last_->val_.first)){
+                start_[bindex].last_ = start_[bindex].last_->prev_;
+            }
+        }
+
+        return node;
+    }
+
 
 }
 
