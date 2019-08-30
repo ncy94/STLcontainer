@@ -33,3 +33,6 @@ target_link_libraries(test_unordered_set PUBLIC container_library)
 
 add_executable(test_unordered_map app/test_unordered_map.cpp)
 target_link_libraries(test_unordered_map PUBLIC container_library)
+
+add_executable(test_rbtree app/test_rbtree.cpp)
+target_link_libraries(test_rbtree PUBLIC container_library)
