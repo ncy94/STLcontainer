@@ -872,7 +872,9 @@ namespace sc::regular{
 
     template<class Key, class Hash, class KeyEqual>
     bool operator==(const unordered_set<Key, Hash, KeyEqual> &lhs, const unordered_set<Key, Hash, KeyEqual> &rhs) {
-        return rhs.list_ == lhs.list_;
+        return (lhs.list_ == rhs.list_) &&
+               (lhs.hash_ == rhs.hash_) &&
+               (lhs.key_eq == rhs.key_eq);
     }
 
     template<class Key, class Hash, class KeyEqual>

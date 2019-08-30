@@ -25,6 +25,6 @@ make
 - [x] list
 - [x] deque
 - [x] unordered_set
-- [ ] unordered_map
+- [X] unordered_map
 - [ ] set
 - [ ] map
