@@ -14,10 +14,12 @@ namespace sc::utils{
 
     protected:
         using left_ = node_base<T, treenode<T>>::next_; //left child
+        using node_base<T, treenode<T>>::val_;
 
     public:
         treenode* right_; //right child
         treenode* parent_; //parent node
+        treenode(T val): node_base(val), right_(nullptr), parent_(nullptr){}
 
     };
 }
