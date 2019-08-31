@@ -25,6 +25,13 @@ namespace sc::utils{
         using treenode<T>::val_;
 
         rbtreenode(T val, rbcolor color=RED): treenode<T>(val), color_(color) {}
+        rbtreenode(const rbtreenode& other): treenode<T>(other), color_(other.color_){}
+        rbtreenode(rbtreenode&& other): treenode<T>(std::move(other)), color_(std::move(other.color_)){}
+
+        rbtreenode& operator=(rbtreenode other){
+            swap(other, *this);
+            return *this;
+        }
 
         void setColor(rbcolor color){
             color_ = color;
@@ -38,8 +45,19 @@ namespace sc::utils{
             return node.color_ == BLACK;
         }
 
+        friend void swap(rbtreenode& tn1, rbtreenode tn2){
+            using std::swap;
+
+            swap(tn1.parent_, tn2.parent_);
+            swap(tn1.right_, tn2.right_);
+            swap(tn1.left_, tn2.left_);
+            swap(tn1.color_, tn2.color_);
+            swap(tn1.val_, tn2.val_);
+        }
+
     };
 
 }
+
 
 #endif //STLCONTAINER_RBTREENODE_HPP
