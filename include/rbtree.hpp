@@ -25,9 +25,18 @@ namespace sc::regular{
         using pointer = T*;
 
         rbtree():root_(nullptr), size_(0), comp_(Compare()){}
-        rbtree(const rbtree&);
-        rbtree(rbtree&&);
-        rbtree& operator=(rbtree);
+        rbtree(const rbtree& other):root_(other.root_), size_(other.size_), comp_(other.comp_){}
+        rbtree(rbtree&& other) noexcept {
+            root_ = other.root_;
+            other.root_ = nullptr;
+            size_ = other.size_;
+            other.size_ = 0;
+            comp_ = std::move(other.comp_);
+        }
+        rbtree& operator=(rbtree other){
+            swap(*this, other);
+            return *this;
+        }
 
         void preOrder();
 
@@ -162,7 +171,9 @@ namespace sc::regular{
 
     template <class T, class Compare>
     void swap(rbtree<T,Compare> &rbt1, rbtree<T,Compare> &rbt2) {
-
+        std::swap(rbt1.root_, rbt2.root_);
+        std::swap(rbt1.size_, rbt2.size_);
+        std::swap(rbt1.comp_, rbt2.comp_);
     }
 
 }
