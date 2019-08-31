@@ -24,7 +24,11 @@ namespace sc::utils{
         using treenode<T>::parent_;
         using treenode<T>::val_;
 
-        rbtreenode(T val): treenode<T>(val), color_(RED) {}
+        rbtreenode(T val, rbcolor color=RED): treenode<T>(val), color_(color) {}
+
+        void setColor(rbcolor color){
+            color_ = color;
+        }
 
         friend bool isRed(const rbtreenode& node){
             return node.color_ == RED;
