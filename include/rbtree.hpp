@@ -184,7 +184,9 @@ namespace sc::regular{
         }
         // step1: search the node
         node_type* current = root_;
+        node_type* pre = nullptr; // pre is set the record the parent of root
         while(current != nullptr){
+            pre = current;
             if(comp_(current->getValue(), node->getValue()) > 0)
                 current = current->right_;
             else if(comp_(current->getValue(), node->getValue()) < 0)
@@ -194,17 +196,32 @@ namespace sc::regular{
         }
 
         // step2: insert the node
-        current = current->parent_;
-        node->parent_ = current;
-        if (comp_(current->getValue(), node->getValue()) > 0) {
-            current->left_ = node;
-        } else if (comp_(current->getValue(), node->getValue()) > 0) {
-            current->right_ = node;
+        assert(current == nullptr);
+        node->parent_ = pre;
+        if (comp_(pre->getValue(), node->getValue()) > 0) {
+            pre->left_ = node;
+        } else if (comp_(pre->getValue(), node->getValue()) > 0) {
+            pre->right_ = node;
         } else throw;
 
+        // step3: set the color to red
+        node->setColor(utils::RED);
 
         // step3: fix the tree
         insertFixup(node);
+
+    }
+
+    template<class T, class Compare>
+    void rbtree<T, Compare>::insert(value_type key) {
+        node_type* tmp = new node_type(key);
+
+        insert(tmp);
+    }
+
+    template<class T, class Compare>
+    void rbtree<T, Compare>::insertFixup(rbtree::node_type *node) {
+
 
     }
 
