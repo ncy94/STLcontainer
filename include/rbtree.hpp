@@ -81,7 +81,7 @@ namespace sc::regular{
 
         void leftRotate(node_type* x);
 
-        void rightRotate(node_type* node);
+        void rightRotate(node_type* x);
 
         void insert(node_type* node);
 
@@ -174,6 +174,38 @@ namespace sc::regular{
         std::swap(rbt1.root_, rbt2.root_);
         std::swap(rbt1.size_, rbt2.size_);
         std::swap(rbt1.comp_, rbt2.comp_);
+    }
+
+    template<class T, class Compare>
+    void rbtree<T, Compare>::insert(rbtree::node_type *node) {
+        if(root_ == nullptr){
+            root_  = node;
+            return;
+        }
+        // step1: search the node
+        node_type* current = root_;
+        while(current != nullptr){
+            if(comp_(current->getValue(), node->getValue()) > 0)
+                current = current->right_;
+            else if(comp_(current->getValue(), node->getValue()) < 0)
+                current = current->left_;
+            else
+                return; // the node is already there
+        }
+
+        // step2: insert the node
+        current = current->parent_;
+        node->parent_ = current;
+        if (comp_(current->getValue(), node->getValue()) > 0) {
+            current->left_ = node;
+        } else if (comp_(current->getValue(), node->getValue()) > 0) {
+            current->right_ = node;
+        } else throw;
+
+
+        // step3: fix the tree
+        insertFixup(node);
+
     }
 
 }
