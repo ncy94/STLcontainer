@@ -11,7 +11,7 @@ namespace sc::regular{
     template <class> class list;
     template <class,class,class> class unordered_set;
     template <class, class, class, class> class unordered_map;
-    template <class> class rbtree;
+    template <class,class> class rbtree;
 }
 
 namespace sc::utils{

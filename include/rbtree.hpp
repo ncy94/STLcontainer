@@ -9,7 +9,7 @@
 
 namespace sc::regular{
 
-    template <class T>
+    template <class T, class Compare=std::less<T>>
     class rbtree{
 
     public:
@@ -24,7 +24,7 @@ namespace sc::regular{
 
         using pointer = T*;
 
-        rbtree();
+        rbtree():root_(nullptr), size_(0), comp_(Compare()){}
         rbtree(const rbtree&);
         rbtree(rbtree&&);
         rbtree& operator=(rbtree);
@@ -57,6 +57,8 @@ namespace sc::regular{
 
         void print();
 
+        friend void swap(rbtree& rbt1, rbtree& rbt2);
+
     private:
         void preOrder(node_type* node) const;
 
@@ -82,10 +84,14 @@ namespace sc::regular{
 
         node_type * root_;
 
+        size_type size_;
+
+        Compare comp_;
+
     };
 
-    template<class T>
-    void rbtree<T>::leftRotate(rbtree::node_type *x) {
+    template<class T, class Compare>
+    void rbtree<T,Compare>::leftRotate(rbtree::node_type *x) {
         /*
          *      |                        |
          *      X           =>           Y
@@ -121,8 +127,8 @@ namespace sc::regular{
 
     }
 
-    template<class T>
-    void rbtree<T>::rightRotate(rbtree::node_type *x) {
+    template<class T, class Compare>
+    void rbtree<T,Compare>::rightRotate(rbtree::node_type *x) {
        /*
         *        |                  |
         *        X        =>        Y
@@ -151,6 +157,11 @@ namespace sc::regular{
         }
         y->right_ = x;
         x->parent_ = y;
+
+    }
+
+    template <class T, class Compare>
+    void swap(rbtree<T,Compare> &rbt1, rbtree<T,Compare> &rbt2) {
 
     }
 
