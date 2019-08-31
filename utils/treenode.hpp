@@ -6,6 +6,10 @@
 #define STLCONTAINER_TREENODE_HPP
 
 #include "node_base.hpp"
+namespace sc::regular{
+
+    template <class T> class rbtree;
+}
 
 namespace sc::utils{
 
@@ -13,6 +17,7 @@ namespace sc::utils{
     class treenode: public node_base<T, treenode<T>>{
 
     protected:
+        template <class> friend class sc::regular::rbtree;
         using left_ = typename node_base<T, treenode<T>>::next_; //left child
         using node_base<T, treenode<T>>::val_;
 
