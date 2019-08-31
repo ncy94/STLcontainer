@@ -10,6 +10,8 @@
 namespace sc::regular{
     template <class> class list;
     template <class,class,class> class unordered_set;
+    template <class, class, class, class> class unordered_map;
+    template <class> class rbtree;
 }
 
 namespace sc::utils{
@@ -42,6 +44,8 @@ namespace sc::utils{
 
     private:
         template <class,class,class> friend class sc::regular::unordered_set;
+        template <class, class, class, class> friend class sc::regular::unordered_map;
+        template <class> friend class sc::regular::rbtree;
         template <class> friend class sc::regular::list;
         template <class> friend class list_iterator;
 

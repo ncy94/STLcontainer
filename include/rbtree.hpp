@@ -68,7 +68,7 @@ namespace sc::regular{
 
         pointer iterativeSearch(node_type* node, value_type key) const;
 
-        void leftRotate(node_type* node);
+        void leftRotate(node_type* x);
 
         void rightRotate(node_type* node);
 
@@ -83,6 +83,76 @@ namespace sc::regular{
         node_type * root_;
 
     };
+
+    template<class T>
+    void rbtree<T>::leftRotate(rbtree::node_type *x) {
+        /*
+         *      |                        |
+         *      X           =>           Y
+         *    /   \                    /   \
+         *   a     Y                  X    c
+         *       /  \                / \
+         *      b   c               a  b
+         */
+        node_type* y = x->right_;
+
+        //give y's left child to x as right child
+        x->right_ = y->left_;
+        if(y->left_ != nullptr) {
+            y->left_->parent_ = x;
+        }
+
+        y->parent_ = x->parent_;
+        // change x's parent to y
+        if(x == root_) {
+            assert(x->parent_ == nullptr);
+            root_ = y;
+        } else{
+            if(x == x->parent_->left_)
+                x->parent_->left_ = y;
+            else if(x == x->parent_->right_)
+                x->parent_->right_ = y;
+            else
+                throw;
+
+        }
+        y->left_ = x;
+        x->parent_ = y;
+
+    }
+
+    template<class T>
+    void rbtree<T>::rightRotate(rbtree::node_type *x) {
+       /*
+        *        |                  |
+        *        X        =>        Y
+        *      /   \              /   \
+        *     Y     c            a    X
+        *    /  \                   /  \
+        *   a    b                 b    c
+        */
+        node_type* y = x->left_;
+
+        // give y's right child to x
+        x->left_ = y->right_;
+        if(y->right_ != nullptr)
+            y->right_->parent_ = x;
+
+        if(x == root_){
+            assert(x->parent_ == nullptr);
+            root_ = y;
+        } else {
+            if (x == x->parent_->left_)
+                x->parent_->left_ = y;
+            else if (x == x->parent_->right_)
+                x->parent_->right_ = y;
+            else
+                throw;
+        }
+        y->right_ = x;
+        x->parent_ = y;
+
+    }
 
 }
 
