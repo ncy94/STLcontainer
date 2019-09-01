@@ -221,6 +221,54 @@ namespace sc::regular{
 
     template<class T, class Compare>
     void rbtree<T, Compare>::insertFixup(rbtree::node_type *node) {
+        // 1. if node is root, make it black
+        if(node == root_) {
+            node->setColor(utils::BLACK);
+            return;
+        }
+
+        // 2. if parent is red
+        node_type * parent = node->parent_;
+        if(parent->isRed()){
+            // 2.1 if uncle is also red (i.e., both children are red)
+            // make them black, and set the grandparent red(same as node)
+            if(parent->parent_->left_->isRed() && parent->parent_->right_->isRed()){
+                parent->left_->setColor(utils::BLACK);
+                parent->right_->setColor(utils::BLACK);
+                parent->parent_->setColor(utils::RED);
+                node = parent->parent_;
+            } else{
+                // 2.2 if uncle is black
+                if(node == parent->left_){
+                    if(parent == parent->parent_->left_){
+                        // 2.2.1 node: left, uncle: left
+                        rightRotate(parent->parent_);
+                        swapColor(parent, parent->parent_);
+
+                    }else if(parent == parent->parent_->right_){
+                        // 2.2.2 node:left, uncle: right
+                        leftRotate(parent);
+                        rightRotate(node);
+                        swapColor(node, node->parent_);
+                    }
+
+                }else if(node == parent->right_){
+                    if(parent == parent->parent_->left_){
+                        // 2.2.3 node:right, uncle: right
+                        leftRotate(parent);
+                        swapColor(parent, parent->parent_);
+
+                    }else if(parent == parent->parent_->right_){
+                        // 2.2.4 node:right, uncle: left
+                        rightRotate(parent);
+                        leftRotate(node);
+                        swapColor(node, node->parent_);
+
+                    }
+
+                }
+            }
+        }
 
 
     }

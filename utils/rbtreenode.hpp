@@ -37,12 +37,16 @@ namespace sc::utils{
             color_ = color;
         }
 
-        friend bool isRed(const rbtreenode& node){
-            return node.color_ == RED;
+        bool isRed(){
+            return color_ == RED;
         }
 
-        friend bool isBlack(const rbtreenode& node){
-            return node.color_ == BLACK;
+        bool isBlack(){
+            return color_ == BLACK;
+        }
+
+        friend void swapColor(rbtreenode& tn1, rbtreenode& tn2){
+            std::swap(tn1.color_, tn2.color_);
         }
 
         friend void swap(rbtreenode& tn1, rbtreenode tn2){
