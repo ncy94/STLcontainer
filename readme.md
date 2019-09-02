@@ -62,7 +62,7 @@ All implementations has the same complexity as standard library.
 - Default constructors. The constructors maybe overloaded by different parameters for different container types. The most common default constructor takes in a `count` parameter which specifies the container size. 
 - Construct from a range specified by two InputIterator of `[first, last)`
 - copy constructor, move constructor
-- copy/move assignment operator. The recently implemented containers use a [^1]**copy-and-swap idiom**
+- copy/move assignment operator. The recently implemented containers use a **copy-and-swap idiom**<sup>[1](#copy-and-swap idiom)</sup>
 
 #### element access, iterators
 - Array-based containers(`vector, deque`) provide random access functions `operator []` and `at()`.
@@ -121,7 +121,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  After resizing, all references and iterators gets invalidated. Accessing the old references/iterators is undefined behaviour.
  
  #### list
- This is a implementation of doubly-linked list with sentinel node. A diagram[^2] of the data structure is shown below:
+ This is a implementation of doubly-linked list with sentinel node. A diagram<sup>[2](#mdams)</sup> of the data structure is shown below:
  ![doubly-linked list with sentinel node](data/img/list.png)
  The benefits of this implementation over standard doubly-linked list are:
  - effectively no memory cost of the sentinel node
@@ -129,7 +129,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  - iterator only points to the node, which reduces one pointer overhead (which points to the end in standard implementation)
  
  #### deque
- This implementation is an array of array. A diagram[^2] of the data structure is shown below:
+ This implementation is an array of array. A diagram<sup>[2](#madams)</sup> of the data structure is shown below:
  ![deque](data/img/deque.png)
  The main idea of this data structure is to have a `map` which is an array stores the pointer to a `block`, and each `block` contains the elements. 
  To explain this diagram, this deque has a `map_` private member, which is effectively an array storing pointers to each block, a private member `size_`, and two private members of type `deque_iterator` which points to the start and finish element in the container.
@@ -142,7 +142,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  
  #### unordered_set
  Unordered_set, most generally know as hash set, is implemented by a linked list (which stores keys) and an array (which stores the buckets.) This implementation makes it possible to traverse all elements efficiently compared to traditional hash map (as in Java's implementation, however, JDK 1.8 use red-black tree on occasion where bucket count exceeds 8, thus providing better efficiency for big load factors)
- This implementations has several variations[^3]. **Microsoft Visual Studio C++** standard library uses a double-linked list to store keys, and each bucket has two pointers which points to the start and end. This implementation has a problem that on the process of `erase`, if user-defined hash function throws, `erase` will throw. However, `erase` should meet no-throw guarantee according to the standard library.
+ This implementations has several variations<sup>[3](#unordered)</sup>. **Microsoft Visual Studio C++** standard library uses a double-linked list to store keys, and each bucket has two pointers which points to the start and end. This implementation has a problem that on the process of `erase`, if user-defined hash function throws, `erase` will throw. However, `erase` should meet no-throw guarantee according to the standard library.
  ![dinkumware's implementation of unordered_set](data/img/dinkumware.png)
   **Boost.unordered** and **Clang's libc++** uses a singly-linked list, the bucket only has one pointer which points to the element before the start of the bucket. 
  ![boost.unordered, libc++](data/img/boost.unordered.png) 
@@ -152,9 +152,9 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  The implementation of `unordered_map` is basically the same as `unordered_set`, except that the value type of `list` is a pair of value and key (i.e., `std::pari<key_type, value_type>`), whereas for `unordered_set` the type is `key_type`.
   
 ## References
-[1] https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-[2] Michael D. Adams. 2019. (02 2019), 1695. [Lecture slides for programming in C++](https://books.google.ca/)
-[3] http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html
+<a name="copy-and-swap-idiom">1</a> https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+<a name="madams">2</a> Michael D. Adams. 2019. (02 2019), 1695. [Lecture slides for programming in C++](https://books.google.ca/)
+<a name="unordered">1</a> http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html
 
 
 
