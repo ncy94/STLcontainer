@@ -153,7 +153,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
   
 ## References
 [1] https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-[2] Michael D. Adams. 2019. (02 2019), 1695. [Lecture slides for programming in C++](https://books.google.ca/
+[2] Michael D. Adams. 2019. (02 2019), 1695. [Lecture slides for programming in C++](https://books.google.ca/)
 [3] http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html
 
 
