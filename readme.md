@@ -10,7 +10,7 @@ The APIs for each container corresponds those in C++ standard library. The autho
 
 This is a static library using cmake. To use this library, just link it with your executable.
 ```cmake
-target_link_libraries(${target_name} STLcontainer)
+target_link_libraries(${target_name} container_library)
 
 ```
 
@@ -24,19 +24,22 @@ make
 
 ## Container lists
 
-- [x] vector
-- [x] list
-- [x] deque
-- [x] unordered_set
-- [X] unordered_map
+- [x] [vector](#vector)
+- [x] [list](#list)
+- [x] [deque](#deque)
+- [x] [unordered_set](#unordered_set)
+- [X] [unordered_map](#unordered_map)
 - [ ] rbtree
 - [ ] set
 - [ ] map 
 
 ## Namespaces
 `sc::regular` includes the regular containers of the library.
+
 `sc::utils` includes several Object-Oriented utilities designed for container implementation. They are random-access (array) iterator, list iterator, deque iterator, list node, tree node. `rbtree` which is a red-black tree, should've been in this namespace. However, as it's can be used as a container, it is moved to the `sc::regular` namespace.
+
 `sc::intrusive` include intrusive containers. *To be implemented*
+
 `sc::lock_free` include lock_free containers. *To be implemented*
 
 ## Interfaces
@@ -113,24 +116,26 @@ All implementations has the same complexity as standard library.
 
 ## Implementation details
 
-#### vector
+### vector
 
 Vector is implemented by allocating a fixed-length chunk of memory, and construct the object elements in that memory. 
  `::operator new[]` takes in a length and returns a `void*` which points the beginning of the chunk of memory. This function allows us to separate memory allocation and object construction, compared to using `new` operation. The benefits of this is that if construction results in exception being thrown, memory can be deallocated more effectively. Also, it's not desirable to deallocates the memory every time when the memory is to be constantly resued.
  The allocated memory is fix-length, which means that it must meet the occasion where the number of elements exceeds the memory length. In this case, a new chunk of memory is automatically allocated, which is twice the length of the original. Then, the elements are moved to the new chunk of memory using `std::uninitialized_move`. If exception thrown during the process, new allocated memory gets destructed immediately, thus providing strong guarantee. In the end, the old memory is destructed.
  After resizing, all references and iterators gets invalidated. Accessing the old references/iterators is undefined behaviour.
  
- #### list
+ ### list
  This is a implementation of doubly-linked list with sentinel node. A diagram<sup>[2](#mdams)</sup> of the data structure is shown below:
  ![doubly-linked list with sentinel node](data/img/list.png)
+ 
  The benefits of this implementation over standard doubly-linked list are:
  - effectively no memory cost of the sentinel node
  - list is circular and always no-empty, this eliminates special cases resulting from empty list.
  - iterator only points to the node, which reduces one pointer overhead (which points to the end in standard implementation)
  
- #### deque
+ ### deque
  This implementation is an array of array. A diagram<sup>[2](#madams)</sup> of the data structure is shown below:
  ![deque](data/img/deque.png)
+ 
  The main idea of this data structure is to have a `map` which is an array stores the pointer to a `block`, and each `block` contains the elements. 
  To explain this diagram, this deque has a `map_` private member, which is effectively an array storing pointers to each block, a private member `size_`, and two private members of type `deque_iterator` which points to the start and finish element in the container.
  The type `deque_iterator` has four members. `cur_` points to the current element. `start_->cur_` points to front of the queue, `finish_->cur_` points to one-past-the-back of the queue. `first_` and `last_` points to the first and one-past-the-end location of each block. `block_` is a reverse pointer which points to it's location in `map_`
@@ -140,15 +145,17 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  - the elements are locally contiguous in memory, which is more cache friendly than node-based queue implementation.
  - The amortized time complexity of `push_back` and `pop_front` is O(1)
  
- #### unordered_set
+ ### unordered_set
  Unordered_set, most generally know as hash set, is implemented by a linked list (which stores keys) and an array (which stores the buckets.) This implementation makes it possible to traverse all elements efficiently compared to traditional hash map (as in Java's implementation, however, JDK 1.8 use red-black tree on occasion where bucket count exceeds 8, thus providing better efficiency for big load factors)
  This implementations has several variations<sup>[3](#unordered)</sup>. **Microsoft Visual Studio C++** standard library uses a double-linked list to store keys, and each bucket has two pointers which points to the start and end. This implementation has a problem that on the process of `erase`, if user-defined hash function throws, `erase` will throw. However, `erase` should meet no-throw guarantee according to the standard library.
- ![dinkumware's implementation of unordered_set](data/img/dinkumware.png)
+ ![dinkumware's implementation of unordered_set](data/img/dinkumware.png)<br>
+ 
   **Boost.unordered** and **Clang's libc++** uses a singly-linked list, the bucket only has one pointer which points to the element before the start of the bucket. 
- ![boost.unordered, libc++](data/img/boost.unordered.png) 
+ ![boost.unordered, libc++](data/img/boost.unordered.png)<br>
+ 
  In order to directly utilized the `list` data structure, I used the **dinkumware's implementation**, which unavoidably lost the no-throw guarantee for `erase.`
  
- #### unordered_map
+ ### unordered_map
  The implementation of `unordered_map` is basically the same as `unordered_set`, except that the value type of `list` is a pair of value and key (i.e., `std::pari<key_type, value_type>`), whereas for `unordered_set` the type is `key_type`.
   
 ## References
@@ -156,7 +163,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
 
 <a name="madams">2</a> Michael D. Adams. 2019. (02 2019), 1695. [Lecture slides for programming in C++](https://books.google.ca/)
 
-<a name="unordered">1</a> http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html
+<a name="unordered">3</a> http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html
 
 
 
