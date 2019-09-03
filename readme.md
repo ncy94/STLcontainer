@@ -125,6 +125,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  
  ### list
  This is a implementation of doubly-linked list with sentinel node. A diagram<sup>[2](#mdams)</sup> of the data structure is shown below:
+ 
  ![doubly-linked list with sentinel node](data/img/list.png)
  
  The benefits of this implementation over standard doubly-linked list are:
@@ -134,6 +135,7 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  
  ### deque
  This implementation is an array of array. A diagram<sup>[2](#madams)</sup> of the data structure is shown below:
+ 
  ![deque](data/img/deque.png)
  
  The main idea of this data structure is to have a `map` which is an array stores the pointer to a `block`, and each `block` contains the elements. 
@@ -148,9 +150,11 @@ Vector is implemented by allocating a fixed-length chunk of memory, and construc
  ### unordered_set
  Unordered_set, most generally know as hash set, is implemented by a linked list (which stores keys) and an array (which stores the buckets.) This implementation makes it possible to traverse all elements efficiently compared to traditional hash map (as in Java's implementation, however, JDK 1.8 use red-black tree on occasion where bucket count exceeds 8, thus providing better efficiency for big load factors)
  This implementations has several variations<sup>[3](#unordered)</sup>. **Microsoft Visual Studio C++** standard library uses a double-linked list to store keys, and each bucket has two pointers which points to the start and end. This implementation has a problem that on the process of `erase`, if user-defined hash function throws, `erase` will throw. However, `erase` should meet no-throw guarantee according to the standard library.
+ 
  ![dinkumware's implementation of unordered_set](data/img/dinkumware.png)<br>
  
   **Boost.unordered** and **Clang's libc++** uses a singly-linked list, the bucket only has one pointer which points to the element before the start of the bucket. 
+  
  ![boost.unordered, libc++](data/img/boost.unordered.png)<br>
  
  In order to directly utilized the `list` data structure, I used the **dinkumware's implementation**, which unavoidably lost the no-throw guarantee for `erase.`
